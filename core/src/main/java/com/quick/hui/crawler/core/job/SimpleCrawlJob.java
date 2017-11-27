@@ -5,6 +5,10 @@ import com.quick.hui.crawler.core.entity.CrawlHttpConf;
 import com.quick.hui.crawler.core.entity.CrawlHttpConf.HttpMethod;
 import com.quick.hui.crawler.core.entity.CrawlMeta;
 import com.quick.hui.crawler.core.entity.CrawlResult;
+import com.quick.hui.crawler.core.task.LoginAuthTokenTask;
+import com.quick.hui.crawler.core.task.LoginSuccessTask;
+import com.quick.hui.crawler.core.task.LoginTask;
+import com.quick.hui.crawler.core.task.TransferPageTask;
 import com.quick.hui.crawler.core.utils.HttpUtils;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,59 +34,40 @@ import java.util.Map;
 @Setter
 public class SimpleCrawlJob extends AbstractJob {
 
+
+  private String initCookie = "";
+
+  @Override
+  public void beforeRun() {
+    initCookie = "visid_incap_796901=sIoy1myjQWufx9kokdKeJELUG1oAAAAAQUIPAAAAAABkrQrvSGdjLnjYvXE9IVhc; nlbi_796901=jBzeEDPuZ0dsKWBiLMejiQAAAACvXKT/8W0+MmqgaEAon06j; incap_ses_877_796901=8yPERGlp3Xv9Q6R877orDIbdG1oAAAAAcnzE7rwW/sa67v+BH6+cWw==; _bidsbackoffice_sessions=MzlqNW5UOE9yK1FkcXVFaDNyekhHbHdHbWJSRkp4dUFHbUIySWw3L0lXay8xZGJ6aFZpZjVTdXYvMVorN0dRSGI4SkNKRUwxVXJuUEUrZ3NIU2dGQmJzUjJVeWJNNmNFUENXd2h5bUtEYUtDbDMzWTdrREExYkQ4OVlDOWo3a256UDZSd3ZVYmRFalRLUCtmSkhGZldiTmxyM1REeC9xdDRMR3oyMGdlZ0xZNWd6eXpiMVJNdW1PNXYxckEwVzNXazJkMUVuL2NVdTRzU094eU0zdFJiK05vNlhUSkF3QkNoSzVmcndJdE5TV09PQWxWRXRWaDBwZzFUNlRVU2ZDMi0tQkthVFF5UjRlbUk2TW0ySXMxTE9yUT09--e9ea174de254361a05e1b1489360cd5087d00b76";
+  }
+
   /**
    * 执行抓取网页
    */
+  @Override
   public void doFetchPage() throws Exception {
 
-    String url2 = "https://www.bitbackoffice.com/auth/login";
-    Set<String> selectRule2 = new HashSet<>();
-    selectRule2.add("input[name=authenticity_token]"); // 博客正文
-    CrawlMeta crawlMeta2 = new CrawlMeta();
-    crawlMeta2.setUrl(url2);
-    crawlMeta2.setSelectorRules(selectRule2);
-
-    CrawJobResult result2 = new CrawJobResult();
-    result2.getHttpConf().setMethod(HttpMethod.GET);
-    result2.setCrawlMeta(crawlMeta2);
-    result2 = doResult(result2);
-
-    String url = "https://www.bitbackoffice.com/auth/login";
-    Set<String> selectRule = new HashSet<>();
-    selectRule.add("div[class=title]"); // 博客标题
-    selectRule.add("div[class=blog-body]"); // 博客正文
-    CrawlMeta crawlMeta = new CrawlMeta();
-    crawlMeta.setUrl(url);
-    crawlMeta.setSelectorRules(selectRule);
-    CrawJobResult result = new CrawJobResult();
-    result.getHttpConf().setMethod(HttpMethod.POST);
-    result.setCrawlMeta(crawlMeta);
-
-    String authToken = result2.getCrawlResult().getResult().get("input[name=authenticity_token]")
-        .get(0);
-    result.getHttpConf().getRequestParams().put("user[username]", "xbya003");
-    result.getHttpConf().getRequestParams().put("user[password]", "xby19800716x");
-    result.getHttpConf().getRequestParams().put("authenticity_token", authToken);
-    result = doResult(result);
-
-    if(result.getCrawlResult().getStatus().getCode()==302){
-      String url3 = "https://www.bitbackoffice.com/";
-      Set<String> selectRule3 = new HashSet<>();
-      selectRule3.add("div[class=title]"); // 博客标题
-      selectRule3.add("div[class=blog-body]"); // 博客正文
-      CrawlMeta crawlMeta3 = new CrawlMeta();
-      crawlMeta3.setUrl(url3);
-      crawlMeta3.setSelectorRules(selectRule);
-      CrawJobResult result3 = new CrawJobResult();
-      result3.getHttpConf().setMethod(HttpMethod.GET);
-      result3.setCrawlMeta(crawlMeta);
-      result3 = doResult(result3);
+    //取登陆页面的authToken
+    CrawJobResult authToken = doResult(LoginAuthTokenTask.buildTask());
+    Thread.sleep(1);
+    String authTokenValue = LoginAuthTokenTask.getTAuthToken(authToken);
+    //登录
+    CrawJobResult login = doResult(LoginTask.buildTask(authTokenValue, "xbya003", "xby19800716x"));
+    //登录成功
+    if (LoginTask.getCode(login) == 302) {
+      Thread.sleep(1);
+      //登录重定向后的页面
+      CrawJobResult loginSuccess = doResult(LoginSuccessTask.buildTask());
+      //进入转账页面
+      Thread.sleep(1);
+      CrawJobResult getTransferPage = doResult(TransferPageTask.buildTask());
     }
   }
 
   private CrawJobResult doResult(CrawJobResult result) throws Exception {
     HttpResponse response = HttpUtils
-        .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
+        .request(result.getCrawlMeta(), result.getHttpConf().buildCookie(this.initCookie));
     String res = EntityUtils.toString(response.getEntity());
     if (response.getStatusLine().getStatusCode() == 200) { // 请求成功
       doParse(result, res);
@@ -90,9 +75,9 @@ public class SimpleCrawlJob extends AbstractJob {
       CrawlResult crawlResult = new CrawlResult();
       crawlResult.setStatus(response.getStatusLine().getStatusCode(),
           response.getStatusLine().getReasonPhrase());
-      if(response.getStatusLine().getStatusCode()==302){//重定向
+      if (response.getStatusLine().getStatusCode() == 302) {//重定向
         crawlResult.setUrl(response.getFirstHeader("location").getValue());
-      }else {
+      } else {
         crawlResult.setUrl(result.getCrawlMeta().getUrl());
       }
       result.setCrawlResult(crawlResult);

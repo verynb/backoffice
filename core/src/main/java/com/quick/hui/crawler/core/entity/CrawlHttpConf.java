@@ -50,9 +50,9 @@ public class CrawlHttpConf {
     this.method = httpMethod;
   }
 
-  public CrawlHttpConf buildCookie() {
+  public CrawlHttpConf buildCookie(String cookies) {
     if (Session.get() == null || CollectionUtils.isEmpty(Session.getCookies())) {
-      List<LocalCookie> localCookies = Lists.newArrayList(new LocalCookie("visid_incap_796901",
+      /*List<LocalCookie> localCookies = Lists.newArrayList(new LocalCookie("visid_incap_796901",
               "azbNT7SxSkKa4sjC0S40DCegGloAAAAAQUIPAAAAAADWPP+CXlYxBIeBB1AVrj8B"),
           new LocalCookie("nlbi_796901", "qwbmBNF+TGfMACfQLMejiQAAAADxyFWrJjNgLv3xa58ind7w"),
           new LocalCookie("incap_ses_453_796901",
@@ -61,20 +61,22 @@ public class CrawlHttpConf {
               "U1BTTGRvbFNqR2c0NzIxSzU3bTUrQ1g4REVjZG41UVZaZlhwTTY2S0gxL2M1NlJ2R1BXSVJnNkV3TkhQZGdRaTBmTlFvZUpVOEdFNzhha0NiamtOUWdoWUV1Mmo1cFNHV3MyODJNTUJLam9ia29ielVVQnoyQVV1bHN0d1dWeDlRSlpTSGFTY2E0NTZoZnRQZGJjSDF3PT0tLWZhdWhhbHZPMlNqb01qb05vaG0xZEE9PQ%3D%3D--a176c65ecd85fdbdfb9f80006ae53cda61ec530c"));
 
       Session session = Session.buildSession(localCookies);
-      Session.persistenceCurrentSession(session);
-    }
-    List<String> cookieStrings = Session.getCookies().stream()
-        .map(c -> {
-          return c.getSessionKey() + "=" + c.getSessionValue();
-        }).collect(Collectors.toList());
-    StringBuffer buffer = new StringBuffer();
-    for (int i = 0; i < cookieStrings.size(); i++) {
-      buffer.append(cookieStrings.get(i));
-      if (i < cookieStrings.size() - 1) {
-        buffer.append("; ");
+      Session.persistenceCurrentSession(session);*/
+      DEFAULT_HEADERS.put("cookie",cookies);
+    }else {
+      List<String> cookieStrings = Session.getCookies().stream()
+          .map(c -> {
+            return c.getSessionKey() + "=" + c.getSessionValue();
+          }).collect(Collectors.toList());
+      StringBuffer buffer = new StringBuffer();
+      for (int i = 0; i < cookieStrings.size(); i++) {
+        buffer.append(cookieStrings.get(i));
+        if (i < cookieStrings.size() - 1) {
+          buffer.append("; ");
+        }
       }
+      DEFAULT_HEADERS.put("cookie", buffer.toString());
     }
-    DEFAULT_HEADERS.put("cookie", buffer.toString());
     return this;
   }
 

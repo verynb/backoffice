@@ -3,10 +3,16 @@ package com.quick.hui.crawler.core.job;
 import com.quick.hui.crawler.core.entity.CrawlHttpConf;
 import com.quick.hui.crawler.core.entity.CrawlMeta;
 import com.quick.hui.crawler.core.entity.CrawlResult;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 /**
  * Created by Administrator on 2017/11/25.
  */
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CrawJobResult {
   /**
    * 配置项信息
