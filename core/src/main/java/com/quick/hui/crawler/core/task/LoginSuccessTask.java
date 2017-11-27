@@ -18,9 +18,8 @@ public class LoginSuccessTask {
   public static CrawJobResult buildTask() {
     Set<String> selectRule = new HashSet<>();
     CrawlMeta crawlMeta = new CrawlMeta(URL,selectRule);
-    CrawJobResult result = CrawJobResult.builder()
-        .crawlMeta(crawlMeta)
-        .build();
+    CrawJobResult result = new CrawJobResult();
+    result.setCrawlMeta(crawlMeta) ;
     result.getHttpConf().setMethod(HttpMethod.GET);
     return result;
   }

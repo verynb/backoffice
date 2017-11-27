@@ -19,9 +19,8 @@ public class LoginAuthTokenTask {
     Set<String> selectRule = new HashSet<>();
     selectRule.add("input[name=authenticity_token]");
     CrawlMeta crawlMeta = new CrawlMeta(URL,selectRule);
-    CrawJobResult result = CrawJobResult.builder()
-        .crawlMeta(crawlMeta)
-        .build();
+    CrawJobResult result = new CrawJobResult();
+    result.setCrawlMeta(crawlMeta) ;
     result.getHttpConf().setMethod(HttpMethod.GET);
     return result;
   }

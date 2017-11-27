@@ -5,6 +5,9 @@ import com.quick.hui.crawler.core.entity.CrawlHttpConf;
 import com.quick.hui.crawler.core.entity.CrawlHttpConf.HttpMethod;
 import com.quick.hui.crawler.core.entity.CrawlMeta;
 import com.quick.hui.crawler.core.entity.CrawlResult;
+import com.quick.hui.crawler.core.entity.TransferPageData;
+import com.quick.hui.crawler.core.entity.TransferWallet;
+import com.quick.hui.crawler.core.task.GetReceiverTask;
 import com.quick.hui.crawler.core.task.LoginAuthTokenTask;
 import com.quick.hui.crawler.core.task.LoginSuccessTask;
 import com.quick.hui.crawler.core.task.LoginTask;
@@ -14,6 +17,8 @@ import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
@@ -39,7 +44,7 @@ public class SimpleCrawlJob extends AbstractJob {
 
   @Override
   public void beforeRun() {
-    initCookie = "visid_incap_796901=sIoy1myjQWufx9kokdKeJELUG1oAAAAAQUIPAAAAAABkrQrvSGdjLnjYvXE9IVhc; nlbi_796901=jBzeEDPuZ0dsKWBiLMejiQAAAACvXKT/8W0+MmqgaEAon06j; incap_ses_877_796901=8yPERGlp3Xv9Q6R877orDIbdG1oAAAAAcnzE7rwW/sa67v+BH6+cWw==; _bidsbackoffice_sessions=MzlqNW5UOE9yK1FkcXVFaDNyekhHbHdHbWJSRkp4dUFHbUIySWw3L0lXay8xZGJ6aFZpZjVTdXYvMVorN0dRSGI4SkNKRUwxVXJuUEUrZ3NIU2dGQmJzUjJVeWJNNmNFUENXd2h5bUtEYUtDbDMzWTdrREExYkQ4OVlDOWo3a256UDZSd3ZVYmRFalRLUCtmSkhGZldiTmxyM1REeC9xdDRMR3oyMGdlZ0xZNWd6eXpiMVJNdW1PNXYxckEwVzNXazJkMUVuL2NVdTRzU094eU0zdFJiK05vNlhUSkF3QkNoSzVmcndJdE5TV09PQWxWRXRWaDBwZzFUNlRVU2ZDMi0tQkthVFF5UjRlbUk2TW0ySXMxTE9yUT09--e9ea174de254361a05e1b1489360cd5087d00b76";
+    initCookie = "visid_incap_796901=azbNT7SxSkKa4sjC0S40DCegGloAAAAAQUIPAAAAAADWPP+CXlYxBIeBB1AVrj8B; _bidsbackoffice_sessions=MkNrNlhlTFREWXpwZW1KbEczKzRBWGsxalgzTXNQaDVtdXgycWtldHBtWFY1VklDS3dwalRMS2JCcnk3WE9Ya3hCL05GempqMlFTS2FSYkt2Y3FrdjJ1UElUa2Z4cVBWYXZpS0pid3NBdzJISHRQSXo3ZWJ5NDY3Qmd5eWsrZDBHbmtCNzhTbm5MdlNRMG1qczB4OUlnPT0tLVhIU3QwdTJGRG5xaGt0Y2tvdXBIS3c9PQ%3D%3D--117fae060e74b05cb8543f74c6f0766e1fc9a1ad; nlbi_796901=xctkCdRXgAa6RyOoLMejiQAAAAAv2Gcb213eCynCkQPD5EQe; incap_ses_533_796901=GZ1hNOZ+91ZWnHpDA5llB0cYHFoAAAAA+FURGDfIlQIFGqi+XvgXkw==";
   }
 
   /**
@@ -50,7 +55,7 @@ public class SimpleCrawlJob extends AbstractJob {
 
     //取登陆页面的authToken
     CrawJobResult authToken = doResult(LoginAuthTokenTask.buildTask());
-    Thread.sleep(1);
+    Thread.sleep(1000);
     String authTokenValue = LoginAuthTokenTask.getTAuthToken(authToken);
     //登录
     CrawJobResult login = doResult(LoginTask.buildTask(authTokenValue, "xbya003", "xby19800716x"));
@@ -61,7 +66,8 @@ public class SimpleCrawlJob extends AbstractJob {
       CrawJobResult loginSuccess = doResult(LoginSuccessTask.buildTask());
       //进入转账页面
       Thread.sleep(1);
-      CrawJobResult getTransferPage = doResult(TransferPageTask.buildTask());
+      CrawJobResult getTransferPage = doResultTransferPage(TransferPageTask.buildTask());
+      CrawJobResult getReceiver=doResult(GetReceiverTask.buildTask("xbya004"));
     }
   }
 
@@ -107,5 +113,74 @@ public class SimpleCrawlJob extends AbstractJob {
     crawlResult.setStatus(CrawlResult.SUCCESS);
     result.setCrawlResult(crawlResult);
   }
+
+
+  private CrawJobResult doResultTransferPage(CrawJobResult result) throws Exception {
+    HttpResponse response = HttpUtils
+        .request(result.getCrawlMeta(), result.getHttpConf().buildCookie(this.initCookie));
+    String res = EntityUtils.toString(response.getEntity());
+    if (response.getStatusLine().getStatusCode() == 200) { // 请求成功
+      doParseForTransferPage(result, res);
+    } else {
+      CrawlResult crawlResult = new CrawlResult();
+      crawlResult.setStatus(response.getStatusLine().getStatusCode(),
+          response.getStatusLine().getReasonPhrase());
+      if (response.getStatusLine().getStatusCode() == 302) {//重定向
+        crawlResult.setUrl(response.getFirstHeader("location").getValue());
+      } else {
+        crawlResult.setUrl(result.getCrawlMeta().getUrl());
+      }
+      result.setCrawlResult(crawlResult);
+    }
+    return result;
+
+  }
+
+  //转账页面解析
+  private void doParseForTransferPage(CrawJobResult result, String html) {
+    Document doc = Jsoup.parse(html);
+    System.out.print(html);
+    Map<String, List<String>> map = new HashMap<>(result.getCrawlMeta().getSelectorRules().size());
+    List<TransferWallet> list = Lists.newArrayList();
+    String authToken = "";
+    String transferUserId = "";
+    for (String rule : result.getCrawlMeta().getSelectorRules()) {
+      for (Element element : doc.select(rule)) {
+        if (rule.equals("select[name=partition_transfer_partition[user_wallet_id]]")) {
+          List<Element> selectChilds = element.children();
+          selectChilds
+              .stream()
+              .filter(c -> StringUtils.isNotBlank(c.val()))
+              .forEach(c -> {
+                String walletId = c.val();
+                Double amount = Double.valueOf(c.text().substring(c.text().indexOf("$")+1, c.text().length()));
+                if (amount > 0) {
+                  list.add(new TransferWallet(walletId, amount));
+                }
+              });
+        }
+        if (rule.equals("input[name=authenticity_token]")) {
+          authToken = element.val();
+        }
+        if (rule.equals("input[name=partition_transfer_partition[user_id]]")) {
+          transferUserId = element.val();
+        }
+      }
+    }
+    CrawlResult crawlResult = new CrawlResult();
+    if (CollectionUtils.isNotEmpty(list)) {
+      TransferPageData data = new TransferPageData();
+      data.setAuthToken(authToken);
+      data.setTransferUserId(transferUserId);
+      data.setTransferWallets(list);
+      crawlResult.setTransferPageData(data);
+    }
+    crawlResult.setHtmlDoc(doc);
+    crawlResult.setUrl(result.getCrawlMeta().getUrl());
+    crawlResult.setResult(map);
+    crawlResult.setStatus(CrawlResult.SUCCESS);
+    result.setCrawlResult(crawlResult);
+  }
+
 
 }

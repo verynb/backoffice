@@ -18,9 +18,8 @@ public class LoginTask {
   public static CrawJobResult buildTask(String tokenValue, String userName, String password) {
     Set<String> selectRule = new HashSet<>();
     CrawlMeta crawlMeta = new CrawlMeta(URL,selectRule);
-    CrawJobResult result = CrawJobResult.builder()
-        .crawlMeta(crawlMeta)
-        .build();
+    CrawJobResult result = new CrawJobResult();
+    result.setCrawlMeta(crawlMeta) ;
     result.getHttpConf().setMethod(HttpMethod.POST);
     result.getHttpConf().getRequestParams().put("user[username]", userName);
     result.getHttpConf().getRequestParams().put("user[password]", password);

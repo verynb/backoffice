@@ -52,18 +52,17 @@ public class CrawlHttpConf {
 
   public CrawlHttpConf buildCookie(String cookies) {
     if (Session.get() == null || CollectionUtils.isEmpty(Session.getCookies())) {
-      /*List<LocalCookie> localCookies = Lists.newArrayList(new LocalCookie("visid_incap_796901",
+      List<LocalCookie> localCookies = Lists.newArrayList(new LocalCookie("visid_incap_796901",
               "azbNT7SxSkKa4sjC0S40DCegGloAAAAAQUIPAAAAAADWPP+CXlYxBIeBB1AVrj8B"),
-          new LocalCookie("nlbi_796901", "qwbmBNF+TGfMACfQLMejiQAAAADxyFWrJjNgLv3xa58ind7w"),
-          new LocalCookie("incap_ses_453_796901",
-              "OndwDf62tyDp3kqIQ2FJBjagGloAAAAAT4NWtk07a8pkLnlcLz1Sig=="),
-          new LocalCookie("_bidsbackoffice_sessions",
-              "U1BTTGRvbFNqR2c0NzIxSzU3bTUrQ1g4REVjZG41UVZaZlhwTTY2S0gxL2M1NlJ2R1BXSVJnNkV3TkhQZGdRaTBmTlFvZUpVOEdFNzhha0NiamtOUWdoWUV1Mmo1cFNHV3MyODJNTUJLam9ia29ielVVQnoyQVV1bHN0d1dWeDlRSlpTSGFTY2E0NTZoZnRQZGJjSDF3PT0tLWZhdWhhbHZPMlNqb01qb05vaG0xZEE9PQ%3D%3D--a176c65ecd85fdbdfb9f80006ae53cda61ec530c"));
-
+          new LocalCookie("_bidsbackoffice_sessions", "bHZjUVBBK0VVTjhvNWNkWDNuTEJ3NGZLRFFYT3hTZ0Y2ZjNVQWRZUmlwUVZRWFc1VGZCR3NkczJiZ2paYXArbWZOTG5mM0FzOGdLZDdIci9uanFGUmZMMmpJVXlacFA1ZTY4S01nejlOZWFBWVNqK0JUUllReFpKZzQxNFpoMjBzd09zZWg3cGNSdWFzMHU5Q1NCeVJQaUVwUEtwMUhQb1dRWXJGQzcyODdPdXJ4Q1JxQ3Ftbm03TmFUOE9XQkdiZHNWam11SFUyWFVhVlhHdkdpbEZQRVZPSnJOaE9zcHhVWFZ6YnBHY1d4d3FRU3ROMG41emExaXBsNHBoMHhHc1VpNnM0RmlsYnVlUXlYeXVENHFlVTZTVzBWZkRFK0MxUEs3K1kxNFNOMmlxanNEcmdWZzRUN0RjZThtSTlKa3lITHhaTDlhTW5Edy82bHNOTGxOb3hraWJTcGhjTnFBOWZzckVHNFJqUVlVVzZaVTUrc21TR09tRmFZdVVCTjJYb0kzTU1KMTg5cWt0OGVrTHdIUU1aYWVaUW1jMWRScHEwWFpnUDFVTThZRDZGRk5lTjB6VFlTQitUWHNiK3VWYi0tTXRQWUZsNlFlQ2NET25QeXBHcS9IUT09--9a5f50257015c4c44bce32d3bca45fb2248a857e"),
+          new LocalCookie("nlbi_796901",
+              "xctkCdRXgAa6RyOoLMejiQAAAAAv2Gcb213eCynCkQPD5EQe"),
+          new LocalCookie("incap_ses_533_796901",
+              "HqbkMWnu5h9/+Y9DA5llB1YrHFoAAAAAKS1ULVmesIZEFsdR4tu8+w=="));
       Session session = Session.buildSession(localCookies);
-      Session.persistenceCurrentSession(session);*/
-      DEFAULT_HEADERS.put("cookie",cookies);
-    }else {
+      Session.persistenceCurrentSession(session);
+//      DEFAULT_HEADERS.put("cookie",cookies);
+    }
       List<String> cookieStrings = Session.getCookies().stream()
           .map(c -> {
             return c.getSessionKey() + "=" + c.getSessionValue();
@@ -76,7 +75,6 @@ public class CrawlHttpConf {
         }
       }
       DEFAULT_HEADERS.put("cookie", buffer.toString());
-    }
     return this;
   }
 
