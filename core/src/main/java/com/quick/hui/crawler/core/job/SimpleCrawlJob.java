@@ -1,20 +1,23 @@
 package com.quick.hui.crawler.core.job;
 
 import com.google.common.collect.Lists;
-import com.quick.hui.crawler.core.entity.CrawlHttpConf;
-import com.quick.hui.crawler.core.entity.CrawlHttpConf.HttpMethod;
-import com.quick.hui.crawler.core.entity.CrawlMeta;
 import com.quick.hui.crawler.core.entity.CrawlResult;
+import com.quick.hui.crawler.core.entity.SendMailResult;
 import com.quick.hui.crawler.core.entity.TransferPageData;
 import com.quick.hui.crawler.core.entity.TransferWallet;
+import com.quick.hui.crawler.core.entity.UserInfo;
 import com.quick.hui.crawler.core.task.GetReceiverTask;
 import com.quick.hui.crawler.core.task.LoginAuthTokenTask;
 import com.quick.hui.crawler.core.task.LoginSuccessTask;
 import com.quick.hui.crawler.core.task.LoginTask;
+import com.quick.hui.crawler.core.task.SendMailTask;
 import com.quick.hui.crawler.core.task.TransferPageTask;
+import com.quick.hui.crawler.core.utils.GsonUtil;
 import com.quick.hui.crawler.core.utils.HttpUtils;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections.CollectionUtils;
@@ -25,11 +28,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * 最简单的一个爬虫任务
  * <p>
@@ -39,12 +37,8 @@ import java.util.Map;
 @Setter
 public class SimpleCrawlJob extends AbstractJob {
 
-
-  private String initCookie = "";
-
   @Override
   public void beforeRun() {
-    initCookie = "visid_incap_796901=azbNT7SxSkKa4sjC0S40DCegGloAAAAAQUIPAAAAAADWPP+CXlYxBIeBB1AVrj8B; _bidsbackoffice_sessions=MkNrNlhlTFREWXpwZW1KbEczKzRBWGsxalgzTXNQaDVtdXgycWtldHBtWFY1VklDS3dwalRMS2JCcnk3WE9Ya3hCL05GempqMlFTS2FSYkt2Y3FrdjJ1UElUa2Z4cVBWYXZpS0pid3NBdzJISHRQSXo3ZWJ5NDY3Qmd5eWsrZDBHbmtCNzhTbm5MdlNRMG1qczB4OUlnPT0tLVhIU3QwdTJGRG5xaGt0Y2tvdXBIS3c9PQ%3D%3D--117fae060e74b05cb8543f74c6f0766e1fc9a1ad; nlbi_796901=xctkCdRXgAa6RyOoLMejiQAAAAAv2Gcb213eCynCkQPD5EQe; incap_ses_533_796901=GZ1hNOZ+91ZWnHpDA5llB0cYHFoAAAAA+FURGDfIlQIFGqi+XvgXkw==";
   }
 
   /**
@@ -61,19 +55,40 @@ public class SimpleCrawlJob extends AbstractJob {
     CrawJobResult login = doResult(LoginTask.buildTask(authTokenValue, "xbya003", "xby19800716x"));
     //登录成功
     if (LoginTask.getCode(login) == 302) {
-      Thread.sleep(1);
+      Thread.sleep(1000);
       //登录重定向后的页面
       CrawJobResult loginSuccess = doResult(LoginSuccessTask.buildTask());
       //进入转账页面
-      Thread.sleep(1);
+      Thread.sleep(1000);
+
       CrawJobResult getTransferPage = doResultTransferPage(TransferPageTask.buildTask());
-      CrawJobResult getReceiver=doResult(GetReceiverTask.buildTask("xbya004"));
+      //取出转入账户的信息
+      UserInfo receiverInfo = GsonUtil
+          .jsonToObject(doResultForJson(GetReceiverTask.buildTask("xbya004")), UserInfo.class);
+      System.out.println(receiverInfo.toString());
+
+      SendMailResult mailResult = GsonUtil
+          .jsonToObject(doResultForJson(
+              SendMailTask.buildTask(getTransferPage.getCrawlResult().getTransferPageData().getAuthToken(),
+                  getTransferPage.getCrawlResult().getTransferPageData().getTransferUserId())), SendMailResult.class);
+//      doResultForJson(
+//              SendMailTask.buildTask(getTransferPage.getCrawlResult().getTransferPageData().getAuthToken(),
+//                  getTransferPage.getCrawlResult().getTransferPageData().getTransferUserId()));
+
+      System.out.println(mailResult.toString());
     }
+  }
+
+  //返回为json的数据
+  private String doResultForJson(CrawJobResult result) throws Exception {
+    HttpResponse response = HttpUtils
+        .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
+    return EntityUtils.toString(response.getEntity());
   }
 
   private CrawJobResult doResult(CrawJobResult result) throws Exception {
     HttpResponse response = HttpUtils
-        .request(result.getCrawlMeta(), result.getHttpConf().buildCookie(this.initCookie));
+        .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
     String res = EntityUtils.toString(response.getEntity());
     if (response.getStatusLine().getStatusCode() == 200) { // 请求成功
       doParse(result, res);
@@ -117,7 +132,7 @@ public class SimpleCrawlJob extends AbstractJob {
 
   private CrawJobResult doResultTransferPage(CrawJobResult result) throws Exception {
     HttpResponse response = HttpUtils
-        .request(result.getCrawlMeta(), result.getHttpConf().buildCookie(this.initCookie));
+        .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
     String res = EntityUtils.toString(response.getEntity());
     if (response.getStatusLine().getStatusCode() == 200) { // 请求成功
       doParseForTransferPage(result, res);
@@ -153,7 +168,7 @@ public class SimpleCrawlJob extends AbstractJob {
               .filter(c -> StringUtils.isNotBlank(c.val()))
               .forEach(c -> {
                 String walletId = c.val();
-                Double amount = Double.valueOf(c.text().substring(c.text().indexOf("$")+1, c.text().length()));
+                Double amount = Double.valueOf(c.text().substring(c.text().indexOf("$") + 1, c.text().length()));
                 if (amount > 0) {
                   list.add(new TransferWallet(walletId, amount));
                 }

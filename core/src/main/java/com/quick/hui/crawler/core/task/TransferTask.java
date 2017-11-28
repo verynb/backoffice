@@ -19,7 +19,7 @@ public class TransferTask {
     CrawJobResult result = new CrawJobResult();
     result.setCrawlMeta(crawlMeta) ;
     result.getHttpConf().setMethod(HttpMethod.POST);
-    result.getHttpConf().getRequestParams().put("authenticity_token", userName);
+    result.getHttpConf().getRequestParams().put("authenticity_token", tokenValue);
     result.getHttpConf().getRequestParams().put("transfer_to", password);
     result.getHttpConf().getRequestParams().put("partition_transfer_partition[user_wallet_id]", tokenValue);
     result.getHttpConf().getRequestParams().put("partition_transfer_partition[amount]", tokenValue);
@@ -27,7 +27,7 @@ public class TransferTask {
     result.getHttpConf().getRequestParams().put("partition_transfer_partition[token]", tokenValue);
     result.getHttpConf().getRequestParams().put("partition_transfer_partition[user_id]", tokenValue);
     result.getHttpConf().getRequestParams().put("partition_transfer_partition[receiver_id]", tokenValue);
-    result.getHttpConf().getRequestParams().put("partition_transfer_partition[receiver_wallet_id]", tokenValue);
+    result.getHttpConf().getRequestParams().put("partition_transfer_partition[receiver_wallet_id]","");
     return result;
   }
 

@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.quick.hui.crawler.core.localSession.LocalCookie;
 import com.quick.hui.crawler.core.localSession.Session;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,31 +51,32 @@ public class CrawlHttpConf {
     this.method = httpMethod;
   }
 
-  public CrawlHttpConf buildCookie(String cookies) {
+  public CrawlHttpConf buildCookie() {
     if (Session.get() == null || CollectionUtils.isEmpty(Session.getCookies())) {
       List<LocalCookie> localCookies = Lists.newArrayList(new LocalCookie("visid_incap_796901",
-              "azbNT7SxSkKa4sjC0S40DCegGloAAAAAQUIPAAAAAADWPP+CXlYxBIeBB1AVrj8B"),
-          new LocalCookie("_bidsbackoffice_sessions", "bHZjUVBBK0VVTjhvNWNkWDNuTEJ3NGZLRFFYT3hTZ0Y2ZjNVQWRZUmlwUVZRWFc1VGZCR3NkczJiZ2paYXArbWZOTG5mM0FzOGdLZDdIci9uanFGUmZMMmpJVXlacFA1ZTY4S01nejlOZWFBWVNqK0JUUllReFpKZzQxNFpoMjBzd09zZWg3cGNSdWFzMHU5Q1NCeVJQaUVwUEtwMUhQb1dRWXJGQzcyODdPdXJ4Q1JxQ3Ftbm03TmFUOE9XQkdiZHNWam11SFUyWFVhVlhHdkdpbEZQRVZPSnJOaE9zcHhVWFZ6YnBHY1d4d3FRU3ROMG41emExaXBsNHBoMHhHc1VpNnM0RmlsYnVlUXlYeXVENHFlVTZTVzBWZkRFK0MxUEs3K1kxNFNOMmlxanNEcmdWZzRUN0RjZThtSTlKa3lITHhaTDlhTW5Edy82bHNOTGxOb3hraWJTcGhjTnFBOWZzckVHNFJqUVlVVzZaVTUrc21TR09tRmFZdVVCTjJYb0kzTU1KMTg5cWt0OGVrTHdIUU1aYWVaUW1jMWRScHEwWFpnUDFVTThZRDZGRk5lTjB6VFlTQitUWHNiK3VWYi0tTXRQWUZsNlFlQ2NET25QeXBHcS9IUT09--9a5f50257015c4c44bce32d3bca45fb2248a857e"),
+              "frR0xUAFQLCOH4BWc//KjmIMHVoAAAAAQUIPAAAAAABv+VXNLjZzXs20GVkgaVpD"),
+          new LocalCookie("_bidsbackoffice_sessions",
+              "L2lnSHVuOW9WM1hlTkJtOGE1VEJNbkE4cWl2Q3AwVUJXaTJnbjF2L0pUL0NMNmtxUUNDSEExQ0RlWkx4WDhNR2RCS0JQVHQ4ekZzOXRHN2VmV2o4OGFTdFhZNXFsUXBWYm9Tck9qZTVhWTlYbUZrY0g0ZzhZQ1FscENCZzNUNHpJZzJhb044NmlYWnNhUTZiSUdHL2lMMFU3Z2xmR0hIa2EyUlgrNTFUY3hPQjZCQjhpTWZzdXhUdkV5NEZHTzZ0d0R2THVNbExtcU44dFhSSTNnYWFCNGVPcTJGd0t5R2Y1Z1lyMVdDd3lwWT0tLXN2YndvMlhTMDlrdmRDQ0lEekg1R3c9PQ%3D%3D--d96e0c37407dd09bbf8f0e3157433de6fca7fcbb"),
           new LocalCookie("nlbi_796901",
-              "xctkCdRXgAa6RyOoLMejiQAAAAAv2Gcb213eCynCkQPD5EQe"),
-          new LocalCookie("incap_ses_533_796901",
-              "HqbkMWnu5h9/+Y9DA5llB1YrHFoAAAAAKS1ULVmesIZEFsdR4tu8+w=="));
+              "0B8EcBkOTW6HNFt/LMejiQAAAABc17wDhmol9ph8NSRAlR7A"),
+          new LocalCookie("incap_ses_877_796901",
+              "6r81bwuDy1toU51977orDGIMHVoAAAAATx8DI8TpKFMAgotV6FxbDA=="));
       Session session = Session.buildSession(localCookies);
       Session.persistenceCurrentSession(session);
 //      DEFAULT_HEADERS.put("cookie",cookies);
     }
-      List<String> cookieStrings = Session.getCookies().stream()
-          .map(c -> {
-            return c.getSessionKey() + "=" + c.getSessionValue();
-          }).collect(Collectors.toList());
-      StringBuffer buffer = new StringBuffer();
-      for (int i = 0; i < cookieStrings.size(); i++) {
-        buffer.append(cookieStrings.get(i));
-        if (i < cookieStrings.size() - 1) {
-          buffer.append("; ");
-        }
+    List<String> cookieStrings = Session.getCookies().stream()
+        .map(c -> {
+          return c.getSessionKey() + "=" + c.getSessionValue();
+        }).collect(Collectors.toList());
+    StringBuffer buffer = new StringBuffer();
+    for (int i = 0; i < cookieStrings.size(); i++) {
+      buffer.append(cookieStrings.get(i));
+      if (i < cookieStrings.size() - 1) {
+        buffer.append("; ");
       }
-      DEFAULT_HEADERS.put("cookie", buffer.toString());
+    }
+    DEFAULT_HEADERS.put("cookie", buffer.toString());
     return this;
   }
 
@@ -95,18 +97,19 @@ public class CrawlHttpConf {
    * 请求头
    */
   @Setter
-  private Map<String, String> requestHeaders;
+  private Map<String, String> requestHeaders = Maps.newHashMap();
 
 
   /**
    * 请求参数
    */
   @Setter
-  private Map<String, Object> requestParams= Maps.newHashMap();
+  private Map<String, Object> requestParams = Maps.newHashMap();
 
 
   public Map<String, String> getRequestHeaders() {
-    return DEFAULT_HEADERS;
+    this.requestHeaders.putAll(DEFAULT_HEADERS);
+    return requestHeaders;
   }
 
   public Map<String, Object> getRequestParams() {
