@@ -1,41 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="5e514d35-5a3d-44e3-8a0e-a159a6e2802c" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/core/src/main/java/com/quick/hui/crawler/core/entity/SendMailResult.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/core/src/main/java/com/quick/hui/crawler/core/ocr/OcrDemo.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/core/src/main/java/com/quick/hui/crawler/core/task/SendMailTask.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/core/src/main/java/com/quick/hui/crawler/core/utils/GsonUtil.java" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/berkely/berkely.iml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/berkely/pom.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/berkely/src/main/java/com/quick/hui/crawler/berkely/BasicTypeHelper.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/berkely/src/main/java/com/quick/hui/crawler/berkely/BerkelyHelper.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/berkely/src/test/java/com/quick/hui/crawler/berkely/test/BerkelyHelperTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/berkely/src/test/java/com/quick/hui/crawler/berkely/test/ObjDataTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/berkely/src/test/java/com/quick/hui/crawler/berkely/test/SimpleDataTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/berkely/src/test/java/com/quick/hui/crawler/berkely/test/entity/ToSaveDO.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/common/common.iml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/common/pom.xml" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/target/classes/com/quick/hui/crawler/core/entity/CrawlHttpConf$HttpMethod.class" afterPath="$PROJECT_DIR$/core/target/classes/com/quick/hui/crawler/core/entity/CrawlHttpConf$HttpMethod.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/target/classes/com/quick/hui/crawler/core/entity/CrawlHttpConf.class" afterPath="$PROJECT_DIR$/core/target/classes/com/quick/hui/crawler/core/entity/CrawlHttpConf.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/target/classes/com/quick/hui/crawler/core/job/SimpleCrawlJob.class" afterPath="$PROJECT_DIR$/core/target/classes/com/quick/hui/crawler/core/job/SimpleCrawlJob.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/target/classes/com/quick/hui/crawler/core/localSession/Session.class" afterPath="$PROJECT_DIR$/core/target/classes/com/quick/hui/crawler/core/localSession/Session.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/target/classes/com/quick/hui/crawler/core/utils/HttpUtils$1.class" afterPath="$PROJECT_DIR$/core/target/classes/com/quick/hui/crawler/core/utils/HttpUtils$1.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/target/classes/com/quick/hui/crawler/core/utils/HttpUtils.class" afterPath="$PROJECT_DIR$/core/target/classes/com/quick/hui/crawler/core/utils/HttpUtils.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/core.iml" afterPath="$PROJECT_DIR$/core/core.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/pom.xml" afterPath="$PROJECT_DIR$/core/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/src/main/java/com/quick/hui/crawler/core/entity/CrawlHttpConf.java" afterPath="$PROJECT_DIR$/core/src/main/java/com/quick/hui/crawler/core/entity/CrawlHttpConf.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/src/main/java/com/quick/hui/crawler/core/job/SimpleCrawlJob.java" afterPath="$PROJECT_DIR$/core/src/main/java/com/quick/hui/crawler/core/job/SimpleCrawlJob.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/src/main/java/com/quick/hui/crawler/core/task/GetReceiverTask.java" afterPath="$PROJECT_DIR$/core/src/main/java/com/quick/hui/crawler/core/task/GetReceiverTask.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/src/main/java/com/quick/hui/crawler/core/task/TransferTask.java" afterPath="$PROJECT_DIR$/core/src/main/java/com/quick/hui/crawler/core/task/TransferTask.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterPath="$PROJECT_DIR$/core/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterPath="$PROJECT_DIR$/core/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/demo/demo.iml" afterPath="$PROJECT_DIR$/demo/demo.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/quick-crawler.iml" afterPath="$PROJECT_DIR$/quick-crawler.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/quick-crawler.ipr" afterPath="$PROJECT_DIR$/quick-crawler.ipr" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/quick-crawler.iws" afterPath="$PROJECT_DIR$/quick-crawler.iws" />
-    </list>
+    <list default="true" id="5e514d35-5a3d-44e3-8a0e-a159a6e2802c" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/target/" />
     <ignored path="$PROJECT_DIR$/core/target/" />
     <ignored path="$PROJECT_DIR$/common/target/" />
@@ -210,7 +176,7 @@
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="OcrDemo.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="OcrDemo.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/core/src/main/java/com/quick/hui/crawler/core/ocr/OcrDemo.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="167">
@@ -223,10 +189,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AipOcr.class" pinned="false" current-in-tab="false">
+      <file leaf-file-name="AipOcr.class" pinned="false" current-in-tab="true">
         <entry file="jar://$PROJECT_DIR$/lib/aip-java-sdk-3.2.1.jar!/com/baidu/aip/ocr/AipOcr.class">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="154">
+            <state relative-caret-position="-1364">
               <caret line="21" column="9" lean-forward="false" selection-start-line="21" selection-start-column="9" selection-end-line="21" selection-end-column="9" />
               <folding>
                 <element signature="e#624#625#0" expanded="true" />
@@ -1052,6 +1018,14 @@
       <workItem from="1511748978607" duration="16517000" />
       <workItem from="1511790002149" duration="11280000" />
     </task>
+    <task id="LOCAL-00001" summary="【add】新增图像识别demo，">
+      <created>1511866573387</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1511866573387</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1087,7 +1061,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="39547000" />
+    <option name="totallyTimeSpent" value="39609000" />
   </component>
   <component name="TodoView" selected-index="0">
     <todo-panel id="selected-file">
@@ -1187,6 +1161,10 @@
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="【add】新增图像识别demo，" />
+    <option name="LAST_COMMIT_MESSAGE" value="【add】新增图像识别demo，" />
   </component>
   <component name="VssConfiguration">
     <CheckoutOptions>
@@ -1342,6 +1320,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="81">
           <caret line="3" column="53" lean-forward="true" selection-start-line="3" selection-start-column="53" selection-end-line="3" selection-end-column="53" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1698,17 +1677,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://$PROJECT_DIR$/lib/aip-java-sdk-3.2.1.jar!/com/baidu/aip/ocr/AipOcr.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="154">
-          <caret line="21" column="9" lean-forward="false" selection-start-line="21" selection-start-column="9" selection-end-line="21" selection-end-column="9" />
-          <folding>
-            <element signature="e#624#625#0" expanded="true" />
-            <element signature="e#664#665#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/core/src/main/java/com/quick/hui/crawler/core/ocr/OcrDemo.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="167">
@@ -1716,6 +1684,17 @@
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#524#540#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/lib/aip-java-sdk-3.2.1.jar!/com/baidu/aip/ocr/AipOcr.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1364">
+          <caret line="21" column="9" lean-forward="false" selection-start-line="21" selection-start-column="9" selection-end-line="21" selection-end-column="9" />
+          <folding>
+            <element signature="e#624#625#0" expanded="true" />
+            <element signature="e#664#665#0" expanded="true" />
           </folding>
         </state>
       </provider>
