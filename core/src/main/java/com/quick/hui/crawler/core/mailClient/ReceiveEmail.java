@@ -8,10 +8,12 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
+import javax.mail.BodyPart;
 import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
 import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.Store;
@@ -166,8 +168,14 @@ public class ReceiveEmail {
       // text/html 类型
       bodyText.append((String) part.getContent());
     } else if (part.isMimeType("multipart")) {
-
-    }
+      Multipart multipart = (Multipart) part.getContent();
+      int counts = multipart.getCount();
+      for (int i = 0; i < counts; i++) {
+        getMailContent(multipart.getBodyPart(i));
+      }
+    }else if (part.isMimeType("message/rfc822")) {
+      getMailContent((Part) part.getContent());
+    } else {}
   }
 
   public boolean getReplySign() throws MessagingException {
@@ -213,21 +221,65 @@ public class ReceiveEmail {
 
 
   public boolean isContainAttach(Part part) throws Exception {
-    boolean attachFlag = false;
-    // String contentType = part.getContentType();
-    if (part.isMimeType("multipart")) {
-
+    boolean attachflag = false;
+    String contentType = part.getContentType();
+    if (part.isMimeType("multipart/*")) {
+      Multipart mp = (Multipart) part.getContent();
+      for (int i = 0; i < mp.getCount(); i++) {
+        BodyPart mpart = mp.getBodyPart(i);
+        String disposition = mpart.getDisposition();
+        if ((disposition != null)
+            && ((disposition.equals(Part.ATTACHMENT)) || (disposition
+            .equals(Part.INLINE))))
+          attachflag = true;
+        else if (mpart.isMimeType("multipart/*")) {
+          attachflag = isContainAttach((Part) mpart);
+        } else {
+          String contype = mpart.getContentType();
+          if (contype.toLowerCase().indexOf("application") != -1)
+            attachflag = true;
+          if (contype.toLowerCase().indexOf("name") != -1)
+            attachflag = true;
+        }
+      }
+    } else if (part.isMimeType("message/rfc822")) {
+      attachflag = isContainAttach((Part) part.getContent());
     }
-    return true;
+    return attachflag;
   }
 
   public void saveAttachMent(Part part) throws Exception {
     String fileName = "";
-    if (part.isMimeType("multipart")){
-
+    if (part.isMimeType("multipart/*")) {
+      Multipart mp = (Multipart) part.getContent();
+      for (int i = 0; i < mp.getCount(); i++) {
+        BodyPart mpart = mp.getBodyPart(i);
+        String disposition = mpart.getDisposition();
+        if ((disposition != null)
+            && ((disposition.equals(Part.ATTACHMENT)) || (disposition
+            .equals(Part.INLINE)))) {
+          fileName = mpart.getFileName();
+          if (fileName.toLowerCase().indexOf("gb2312") != -1) {
+            fileName = MimeUtility.decodeText(fileName);
+          }
+          saveFile(fileName, mpart.getInputStream());
+        } else if (mpart.isMimeType("multipart/*")) {
+          saveAttachMent(mpart);
+        } else {
+          fileName = mpart.getFileName();
+          if ((fileName != null)
+              && (fileName.toLowerCase().indexOf("GB2312") != -1)) {
+            fileName = MimeUtility.decodeText(fileName);
+            saveFile(fileName, mpart.getInputStream());
+          }
+        }
+      }
+    } else if (part.isMimeType("message/rfc822")) {
+      saveAttachMent((Part) part.getContent());
     }
   }
-    public void setAttachPath (String attachPath){
+
+  public void setAttachPath (String attachPath){
       this.saveAttachPath = attachPath;
     }
 
@@ -320,7 +372,7 @@ public class ReceiveEmail {
       re.getMailContent((Part) message[i]);
       System.out.println("邮件　" + i + "　正文内容:　\r\n" + re.getBodyText());
       re.setAttachPath("e:\\");
-      re.saveAttachMent((Part) message[i]);
+//      re.saveAttachMent((Part) message[i]);
     }
   }
 }
