@@ -6,9 +6,16 @@ import java.util.List;
  * Created by Administrator on 2017/11/27.
  */
 public class TransferPageData {
+
   private String authToken;
   private String transferUserId;
   private List<TransferWallet> transferWallets;
+
+  public TransferPageData(String authToken, String transferUserId, List<TransferWallet> transferWallets) {
+    this.authToken = authToken;
+    this.transferUserId = transferUserId;
+    this.transferWallets = transferWallets;
+  }
 
   public String getAuthToken() {
     return authToken;

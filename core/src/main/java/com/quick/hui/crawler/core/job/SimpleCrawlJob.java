@@ -1,32 +1,22 @@
 package com.quick.hui.crawler.core.job;
 
-import com.google.common.collect.Lists;
-import com.quick.hui.crawler.core.entity.CrawlResult;
 import com.quick.hui.crawler.core.entity.SendMailResult;
 import com.quick.hui.crawler.core.entity.TransferPageData;
+import com.quick.hui.crawler.core.entity.TransferParam;
 import com.quick.hui.crawler.core.entity.TransferWallet;
 import com.quick.hui.crawler.core.entity.UserInfo;
 import com.quick.hui.crawler.core.task.GetReceiverTask;
+import com.quick.hui.crawler.core.entity.LoginAuthTokenData;
 import com.quick.hui.crawler.core.task.LoginAuthTokenTask;
 import com.quick.hui.crawler.core.task.LoginSuccessTask;
 import com.quick.hui.crawler.core.task.LoginTask;
 import com.quick.hui.crawler.core.task.SendMailTask;
 import com.quick.hui.crawler.core.task.TransferPageTask;
-import com.quick.hui.crawler.core.utils.GsonUtil;
-import com.quick.hui.crawler.core.utils.HttpUtils;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.quick.hui.crawler.core.task.TransferTask;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.util.EntityUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 最简单的一个爬虫任务
@@ -35,6 +25,7 @@ import org.jsoup.nodes.Element;
  */
 @Getter
 @Setter
+@Slf4j
 public class SimpleCrawlJob extends AbstractJob {
 
   @Override
@@ -42,160 +33,73 @@ public class SimpleCrawlJob extends AbstractJob {
   }
 
   /**
-   * 执行抓取网页
+   * 转账流程如下
+   * 1.抓取登录静态页面，取到页面[authenticity_token]的值
+   * 2.执行登录请求，获取登录后的cookies
+   * 3.拿到登录后重定向的页面，获取cookies
+   * 4.进入转账页面
+   * 4-1：获取转账金额
+   * 4-2：获取转账钱包ID
+   * 4-3：获取转账人ID
+   * 4-4：获取转账转账页面authenticity_token
+   * 5.获取转账户信息
+   * 6.向转账账户发邮件生成转账TOKEN
+   * 7.登录邮件获取token
+   * 8.完成转账
    */
   @Override
   public void doFetchPage() throws Exception {
 
     //取登陆页面的authToken
-    CrawJobResult authToken = doResult(LoginAuthTokenTask.buildTask());
-    Thread.sleep(1000);
-    String authTokenValue = LoginAuthTokenTask.getTAuthToken(authToken);
+    LoginAuthTokenData tokenData = LoginAuthTokenTask.execute();
+    if (tokenData.getCode() != 200) {
+      log.debug(tokenData.toString());
+    }
     //登录
-    CrawJobResult login = doResult(LoginTask.buildTask(authTokenValue, "xbya003", "xby19800716x"));
+    int loginCode = LoginTask.execute(tokenData.getResult(), "xbya003", "xby19800716x");
     //登录成功
-    if (LoginTask.getCode(login) == 302) {
-      Thread.sleep(1000);
+    if (loginCode == 302) {
       //登录重定向后的页面
-      CrawJobResult loginSuccess = doResult(LoginSuccessTask.buildTask());
-      //进入转账页面
-      Thread.sleep(1000);
-
-      CrawJobResult getTransferPage = doResultTransferPage(TransferPageTask.buildTask());
-      //取出转入账户的信息
-      UserInfo receiverInfo = GsonUtil
-          .jsonToObject(doResultForJson(GetReceiverTask.buildTask("xbya004")), UserInfo.class);
-      System.out.println(receiverInfo.toString());
-
-      SendMailResult mailResult = GsonUtil
-          .jsonToObject(doResultForJson(
-              SendMailTask.buildTask(getTransferPage.getCrawlResult().getTransferPageData().getAuthToken(),
-                  getTransferPage.getCrawlResult().getTransferPageData().getTransferUserId())), SendMailResult.class);
-//      doResultForJson(
-//              SendMailTask.buildTask(getTransferPage.getCrawlResult().getTransferPageData().getAuthToken(),
-//                  getTransferPage.getCrawlResult().getTransferPageData().getTransferUserId()));
-
-      System.out.println(mailResult.toString());
+      int loginSuccessCode = LoginSuccessTask.execute();
+      transfer();
     }
   }
 
-  //返回为json的数据
-  private String doResultForJson(CrawJobResult result) throws Exception {
-    HttpResponse response = HttpUtils
-        .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
-    return EntityUtils.toString(response.getEntity());
-  }
 
-  private CrawJobResult doResult(CrawJobResult result) throws Exception {
-    HttpResponse response = HttpUtils
-        .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
-    String res = EntityUtils.toString(response.getEntity());
-    if (response.getStatusLine().getStatusCode() == 200) { // 请求成功
-      doParse(result, res);
-    } else {
-      CrawlResult crawlResult = new CrawlResult();
-      crawlResult.setStatus(response.getStatusLine().getStatusCode(),
-          response.getStatusLine().getReasonPhrase());
-      if (response.getStatusLine().getStatusCode() == 302) {//重定向
-        crawlResult.setUrl(response.getFirstHeader("location").getValue());
-      } else {
-        crawlResult.setUrl(result.getCrawlMeta().getUrl());
-      }
-      result.setCrawlResult(crawlResult);
+  /**
+   * 执行转账功能
+   * @throws InterruptedException
+   */
+  private void transfer() throws InterruptedException {
+
+    TransferPageData getTransferPage = TransferPageTask.execute();
+    UserInfo receiverInfo = GetReceiverTask.execute("xbya004");
+    SendMailResult mailResult =
+        SendMailTask.execute(getTransferPage.getAuthToken(), getTransferPage.getTransferUserId());
+    if (getTransferPage.getTransferWallets()
+        .stream()
+        .filter(t -> t.getAmount() > 0).count() == 0) {
+      return;
     }
-    return result;
+    Optional<TransferWallet> wallet = getTransferPage.getTransferWallets()
+        .stream()
+        .filter(t -> t.getAmount() > 0)
+        .findFirst();
+    if(!wallet.isPresent()){
 
-  }
-
-  private void doParse(CrawJobResult result, String html) {
-    Document doc = Jsoup.parse(html);
-
-    System.out.print(html);
-    Map<String, List<String>> map = new HashMap<>(result.getCrawlMeta().getSelectorRules().size());
-    for (String rule : result.getCrawlMeta().getSelectorRules()) {
-      List<String> list = new ArrayList<>();
-      for (Element element : doc.select(rule)) {
-        list.add(element.val());
-      }
-
-      map.put(rule, list);
+    }else {
+      TransferParam param = new TransferParam(getTransferPage.getAuthToken(),
+          "xbya004",
+          wallet.get().getWalletId(),
+          wallet.get().getAmount(),
+          "",
+          getTransferPage.getTransferUserId(),
+          receiverInfo.getUser_id()
+      );
+      TransferTask.execute(param);
     }
-
-    CrawlResult crawlResult = new CrawlResult();
-    crawlResult.setHtmlDoc(doc);
-    crawlResult.setUrl(result.getCrawlMeta().getUrl());
-    crawlResult.setResult(map);
-    crawlResult.setStatus(CrawlResult.SUCCESS);
-    result.setCrawlResult(crawlResult);
+    Thread.sleep(5000);
+    transfer();
   }
-
-
-  private CrawJobResult doResultTransferPage(CrawJobResult result) throws Exception {
-    HttpResponse response = HttpUtils
-        .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
-    String res = EntityUtils.toString(response.getEntity());
-    if (response.getStatusLine().getStatusCode() == 200) { // 请求成功
-      doParseForTransferPage(result, res);
-    } else {
-      CrawlResult crawlResult = new CrawlResult();
-      crawlResult.setStatus(response.getStatusLine().getStatusCode(),
-          response.getStatusLine().getReasonPhrase());
-      if (response.getStatusLine().getStatusCode() == 302) {//重定向
-        crawlResult.setUrl(response.getFirstHeader("location").getValue());
-      } else {
-        crawlResult.setUrl(result.getCrawlMeta().getUrl());
-      }
-      result.setCrawlResult(crawlResult);
-    }
-    return result;
-
-  }
-
-  //转账页面解析
-  private void doParseForTransferPage(CrawJobResult result, String html) {
-    Document doc = Jsoup.parse(html);
-    System.out.print(html);
-    Map<String, List<String>> map = new HashMap<>(result.getCrawlMeta().getSelectorRules().size());
-    List<TransferWallet> list = Lists.newArrayList();
-    String authToken = "";
-    String transferUserId = "";
-    for (String rule : result.getCrawlMeta().getSelectorRules()) {
-      for (Element element : doc.select(rule)) {
-        if (rule.equals("select[name=partition_transfer_partition[user_wallet_id]]")) {
-          List<Element> selectChilds = element.children();
-          selectChilds
-              .stream()
-              .filter(c -> StringUtils.isNotBlank(c.val()))
-              .forEach(c -> {
-                String walletId = c.val();
-                Double amount = Double.valueOf(c.text().substring(c.text().indexOf("$") + 1, c.text().length()));
-                if (amount > 0) {
-                  list.add(new TransferWallet(walletId, amount));
-                }
-              });
-        }
-        if (rule.equals("input[name=authenticity_token]")) {
-          authToken = element.val();
-        }
-        if (rule.equals("input[name=partition_transfer_partition[user_id]]")) {
-          transferUserId = element.val();
-        }
-      }
-    }
-    CrawlResult crawlResult = new CrawlResult();
-    if (CollectionUtils.isNotEmpty(list)) {
-      TransferPageData data = new TransferPageData();
-      data.setAuthToken(authToken);
-      data.setTransferUserId(transferUserId);
-      data.setTransferWallets(list);
-      crawlResult.setTransferPageData(data);
-    }
-    crawlResult.setHtmlDoc(doc);
-    crawlResult.setUrl(result.getCrawlMeta().getUrl());
-    crawlResult.setResult(map);
-    crawlResult.setStatus(CrawlResult.SUCCESS);
-    result.setCrawlResult(crawlResult);
-  }
-
 
 }

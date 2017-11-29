@@ -2,9 +2,15 @@ package com.quick.hui.crawler.core.task;
 
 import com.quick.hui.crawler.core.entity.CrawlHttpConf.HttpMethod;
 import com.quick.hui.crawler.core.entity.CrawlMeta;
+import com.quick.hui.crawler.core.entity.SendMailResult;
+import com.quick.hui.crawler.core.entity.UserInfo;
 import com.quick.hui.crawler.core.job.CrawJobResult;
+import com.quick.hui.crawler.core.utils.GsonUtil;
+import com.quick.hui.crawler.core.utils.HttpUtils;
 import java.util.HashSet;
 import java.util.Set;
+import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
 
 /**
  * Created by yuanj on 2017/11/27.
@@ -22,13 +28,19 @@ public class SendMailTask {
     result.getHttpConf().getRequestParams().put("authenticity_token", token);
     result.getHttpConf().getRequestParams().put("token[user_id]", userId);
     result.getHttpConf().getRequestParams().put("token[token_type]", "transfer");
-//    result.getHttpConf().getRequestHeaders().put("Content-Type","application/json;charset=UTF-8");
     result.getHttpConf().getRequestHeaders().put("x-requested-with","XMLHttpRequest");
     return result;
   }
 
-  public static int getCode(CrawJobResult crawlMeta) {
-    return crawlMeta.getCrawlResult().getStatus().getCode();
+  public static SendMailResult execute(String token,String userId) {
+    CrawJobResult result = buildTask(token,userId);
+    try {
+      HttpResponse response = HttpUtils
+          .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
+      return GsonUtil.jsonToObject(EntityUtils.toString(response.getEntity()), SendMailResult.class);
+    } catch (Exception e) {
+      return new SendMailResult();
+    }
   }
 
 }

@@ -34,8 +34,7 @@ public class CrawlHttpConf {
     DEFAULT_HEADERS.put("accept",
         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
     DEFAULT_HEADERS.put("connection", "Keep-Alive");
-    DEFAULT_HEADERS.put("user-agent",
-        "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36");
+    DEFAULT_HEADERS.put("user-agent", "Mozilla/5.0");
     DEFAULT_HEADERS.put("accept-encoding", "gzip,deflate,sdch,br");
     DEFAULT_HEADERS.put("accept-language", "zh-CN,zh;q=0.8");
     DEFAULT_HEADERS.put("cache-control", "max-age=0");
@@ -63,13 +62,15 @@ public class CrawlHttpConf {
               "6r81bwuDy1toU51977orDGIMHVoAAAAATx8DI8TpKFMAgotV6FxbDA=="));
       Session session = Session.buildSession(localCookies);
       Session.persistenceCurrentSession(session);
-//      DEFAULT_HEADERS.put("cookie",cookies);
     }
-    List<String> cookieStrings = Session.getCookies().stream()
+    List<String> cookieStrings = Session
+        .getCookies()
+        .stream()
         .map(c -> {
           return c.getSessionKey() + "=" + c.getSessionValue();
         }).collect(Collectors.toList());
     StringBuffer buffer = new StringBuffer();
+
     for (int i = 0; i < cookieStrings.size(); i++) {
       buffer.append(cookieStrings.get(i));
       if (i < cookieStrings.size() - 1) {

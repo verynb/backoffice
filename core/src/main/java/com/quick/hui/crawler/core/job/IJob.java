@@ -1,7 +1,7 @@
 package com.quick.hui.crawler.core.job;
 
 /**
- * Created by yihui on 2017/6/27.
+ * Created by yj on 2017/6/27.
  */
 public interface IJob extends Runnable {
 
