@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.mail.BodyPart;
 import javax.mail.Flags;
 import javax.mail.Folder;
@@ -20,6 +22,7 @@ import javax.mail.Store;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
+import org.apache.commons.lang3.StringUtils;
 
 public class ReceiveEmail {
 
@@ -30,96 +33,12 @@ public class ReceiveEmail {
 
   public ReceiveEmail(MimeMessage mimeMessage) {
     this.mimeMessage = mimeMessage;
-    System.out.println("创建一个ReceiveEmail对象....");
   }
-
-  public void setMimeMessage(MimeMessage mimeMessage) {
-    this.mimeMessage = mimeMessage;
-    System.out.println("设置一个MimeMessage对象...");
-  }
-
-
-  public String getFrom() throws Exception {
-    InternetAddress address[] = (InternetAddress[]) mimeMessage.getFrom();
-    String from = address[0].getAddress();
-    if (from == null) {
-      from = "";
-      System.out.println("无法知道发送者.");
-    }
-    String personal = address[0].getPersonal();
-
-    if (personal == null) {
-      personal = "";
-      System.out.println("无法知道发送者的姓名.");
-    }
-
-    String fromAddr = null;
-    if (personal != null || from != null) {
-      fromAddr = personal + "<" + from + ">";
-      System.out.println("发送者是：" + fromAddr);
-    } else {
-      System.out.println("无法获得发送者信息.");
-    }
-    return fromAddr;
-  }
-
-
-  public String getMailAddress(String type) throws Exception {
-    String mailAddr = "";
-    String addType = type.toUpperCase();
-
-    InternetAddress[] address = null;
-    if (addType.equals("TO") || addType.equals("CC")
-        || addType.equals("BCC")) {
-
-      if (addType.equals("TO")) {
-        address = (InternetAddress[]) mimeMessage
-            .getRecipients(Message.RecipientType.TO);
-      } else if (addType.equals("CC")) {
-        address = (InternetAddress[]) mimeMessage
-            .getRecipients(Message.RecipientType.CC);
-      } else {
-        address = (InternetAddress[]) mimeMessage
-            .getRecipients(Message.RecipientType.BCC);
-      }
-
-      if (address != null) {
-        for (int i = 0; i < address.length; i++) {
-          String emailAddr = address[i].getAddress();
-          if (emailAddr == null) {
-            emailAddr = "";
-          } else {
-            System.out.println("转换之前的emailAddr: " + emailAddr);
-            emailAddr = MimeUtility.decodeText(emailAddr);
-            System.out.println("转换之后的emailAddr: " + emailAddr);
-          }
-          String personal = address[i].getPersonal();
-          if (personal == null) {
-            personal = "";
-          } else {
-            System.out.println("转换之前的personal: " + personal);
-            personal = MimeUtility.decodeText(personal);
-            System.out.println("转换之后的personal: " + personal);
-          }
-          String compositeto = personal + "<" + emailAddr + ">";
-          System.out.println("完整的邮件地址：" + compositeto);
-          mailAddr += "," + compositeto;
-        }
-        mailAddr = mailAddr.substring(1);
-      }
-    } else {
-      throw new Exception("错误的电子邮件类型!");
-    }
-    return mailAddr;
-  }
-
 
   public String getSubject() throws MessagingException {
     String subject = "";
     try {
-      System.out.println("转换前的subject：" + mimeMessage.getSubject());
       subject = MimeUtility.decodeText(mimeMessage.getSubject());
-      System.out.println("转换后的subject: " + mimeMessage.getSubject());
       if (subject == null) {
         subject = "";
       }
@@ -129,27 +48,20 @@ public class ReceiveEmail {
     return subject;
   }
 
-
-  public String getSentDate() throws Exception {
+  public Long getSentDate() throws Exception {
     Date sentDate = mimeMessage.getSentDate();
-    System.out.println("发送日期 原始类型: " + dateFormat);
-    SimpleDateFormat format = new SimpleDateFormat(dateFormat);
-    String strSentDate = format.format(sentDate);
-    System.out.println("发送日期 可读类型: " + strSentDate);
-    return strSentDate;
+    return sentDate.getTime();
   }
-
 
   public String getBodyText() {
     return bodyText.toString();
   }
 
-
   public void getMailContent(Part part) throws Exception {
 
     String contentType = part.getContentType();
     // 获得邮件的MimeType类型
-    System.out.println("邮件的MimeType类型: " + contentType);
+//    System.out.println("邮件的MimeType类型: " + contentType);
 
     int nameIndex = contentType.indexOf("name");
 
@@ -164,43 +76,25 @@ public class ReceiveEmail {
     if (part.isMimeType("text/plain") && conName == false) {
       // text/plain 类型
       bodyText.append((String) part.getContent());
+
+      String str = replaceBlank(part.getContent().toString());
+      System.out.println("token====" + str);
+      String token = str.substring(str.lastIndexOf("*") + 1, str.lastIndexOf("*") + 33);
+      System.out.println("token====" + token);
     } else if (part.isMimeType("text/html") && conName == false) {
       // text/html 类型
+      System.out.println("text====" + part.getContent());
       bodyText.append((String) part.getContent());
-    } else if (part.isMimeType("multipart")) {
+    } else if (part.isMimeType("multipart/alternative")) {
       Multipart multipart = (Multipart) part.getContent();
       int counts = multipart.getCount();
       for (int i = 0; i < counts; i++) {
         getMailContent(multipart.getBodyPart(i));
       }
-    }else if (part.isMimeType("message/rfc822")) {
+    } else if (part.isMimeType("message/rfc822")) {
       getMailContent((Part) part.getContent());
-    } else {}
-  }
-
-  public boolean getReplySign() throws MessagingException {
-
-    boolean replySign = false;
-
-    String needReply[] = mimeMessage
-        .getHeader("Disposition-Notification-To");
-
-    if (needReply != null) {
-      replySign = true;
-    }
-    if (replySign) {
-      System.out.println("该邮件需要回复");
     } else {
-      System.out.println("该邮件不需要回复");
     }
-    return replySign;
-  }
-
-
-  public String getMessageId() throws MessagingException {
-    String messageID = mimeMessage.getMessageID();
-    System.out.println("邮件ID: " + messageID);
-    return messageID;
   }
 
 
@@ -219,119 +113,15 @@ public class ReceiveEmail {
     return isNew;
   }
 
-
-  public boolean isContainAttach(Part part) throws Exception {
-    boolean attachflag = false;
-    String contentType = part.getContentType();
-    if (part.isMimeType("multipart/*")) {
-      Multipart mp = (Multipart) part.getContent();
-      for (int i = 0; i < mp.getCount(); i++) {
-        BodyPart mpart = mp.getBodyPart(i);
-        String disposition = mpart.getDisposition();
-        if ((disposition != null)
-            && ((disposition.equals(Part.ATTACHMENT)) || (disposition
-            .equals(Part.INLINE))))
-          attachflag = true;
-        else if (mpart.isMimeType("multipart/*")) {
-          attachflag = isContainAttach((Part) mpart);
-        } else {
-          String contype = mpart.getContentType();
-          if (contype.toLowerCase().indexOf("application") != -1)
-            attachflag = true;
-          if (contype.toLowerCase().indexOf("name") != -1)
-            attachflag = true;
-        }
-      }
-    } else if (part.isMimeType("message/rfc822")) {
-      attachflag = isContainAttach((Part) part.getContent());
+  public String replaceBlank(String str) {
+    String dest = "";
+    if (str != null) {
+      Pattern p = Pattern.compile("\\s*|\t|\r|\n");
+      Matcher m = p.matcher(str);
+      dest = m.replaceAll("");
     }
-    return attachflag;
+    return dest;
   }
-
-  public void saveAttachMent(Part part) throws Exception {
-    String fileName = "";
-    if (part.isMimeType("multipart/*")) {
-      Multipart mp = (Multipart) part.getContent();
-      for (int i = 0; i < mp.getCount(); i++) {
-        BodyPart mpart = mp.getBodyPart(i);
-        String disposition = mpart.getDisposition();
-        if ((disposition != null)
-            && ((disposition.equals(Part.ATTACHMENT)) || (disposition
-            .equals(Part.INLINE)))) {
-          fileName = mpart.getFileName();
-          if (fileName.toLowerCase().indexOf("gb2312") != -1) {
-            fileName = MimeUtility.decodeText(fileName);
-          }
-          saveFile(fileName, mpart.getInputStream());
-        } else if (mpart.isMimeType("multipart/*")) {
-          saveAttachMent(mpart);
-        } else {
-          fileName = mpart.getFileName();
-          if ((fileName != null)
-              && (fileName.toLowerCase().indexOf("GB2312") != -1)) {
-            fileName = MimeUtility.decodeText(fileName);
-            saveFile(fileName, mpart.getInputStream());
-          }
-        }
-      }
-    } else if (part.isMimeType("message/rfc822")) {
-      saveAttachMent((Part) part.getContent());
-    }
-  }
-
-  public void setAttachPath (String attachPath){
-      this.saveAttachPath = attachPath;
-    }
-
-  public void setDateFormat(String format) throws Exception {
-    this.dateFormat = format;
-  }
-
-  public String getAttachPath() {
-    return saveAttachPath;
-  }
-
-  private void saveFile(String fileName, InputStream in) throws Exception {
-    String osName = System.getProperty("os.name");
-    String storeDir = getAttachPath();
-    String separator = "";
-    if (osName == null) {
-      osName = "";
-    }
-    if (osName.toLowerCase().indexOf("win") != -1) {
-      separator = "\\";
-      if (storeDir == null || storeDir.equals("")) {
-        storeDir = "c:\\tmp";
-      }
-    } else {
-      separator = "/";
-      storeDir = "/tmp";
-    }
-    File storeFile = new File(storeDir + separator + fileName);
-    System.out.println("附件的保存地址:　" + storeFile.toString());
-    // for(int　i=0;storefile.exists();i++){
-    // storefile　=　new　File(storedir+separator+fileName+i);
-    // }
-    BufferedOutputStream bos = null;
-    BufferedInputStream bis = null;
-
-    try {
-      bos = new BufferedOutputStream(new FileOutputStream(storeFile));
-      bis = new BufferedInputStream(in);
-      int c;
-      while ((c = bis.read()) != -1) {
-        bos.write(c);
-        bos.flush();
-      }
-    } catch (Exception exception) {
-      exception.printStackTrace();
-      throw new Exception("文件保存失败!");
-    } finally {
-      bos.close();
-      bis.close();
-    }
-  }
-
 
   public static void main(String args[]) throws Exception {
     String host = "pop.163.com"; //
@@ -355,11 +145,15 @@ public class ReceiveEmail {
 
     for (int i = 0; i < message.length; i++) {
       re = new ReceiveEmail((MimeMessage) message[i]);
-      System.out.println("邮件　" + i + "　主题:　" + re.getSubject());
-      System.out.println("邮件　" + i + "　发送时间:　" + re.getSentDate());
-      System.out.println("邮件　" + i + "　是否需要回复:　" + re.getReplySign());
-      System.out.println("邮件　" + i + "　是否已读:　" + re.isNew());
-      System.out.println("邮件　" + i + "　是否包含附件:　"
+      if (StringUtils.isBlank(re.getSubject()) || !re.getSubject().equals("Token for your TRANSFER")) {
+        continue;
+      }
+      System.out.println("subject:" + re.getSubject());
+//      System.out.println("邮件　" + i + "　主题:　" + re.getSubject());
+//      System.out.println("邮件　" + i + "　发送时间:　" + re.getSentDate());
+//      System.out.println("邮件　" + i + "　是否需要回复:　" + re.getReplySign());
+//      System.out.println("邮件　" + i + "　是否已读:　" + re.isNew());
+     /* System.out.println("邮件　" + i + "　是否包含附件:　"
           + re.isContainAttach((Part) message[i]));
       System.out.println("邮件　" + i + "　发送人地址:　" + re.getFrom());
       System.out
@@ -368,10 +162,10 @@ public class ReceiveEmail {
       System.out.println("邮件　" + i + "　暗抄:　" + re.getMailAddress("bcc"));
       re.setDateFormat("yy年MM月dd日　HH:mm");
       System.out.println("邮件　" + i + "　发送时间:　" + re.getSentDate());
-      System.out.println("邮件　" + i + "　邮件ID:　" + re.getMessageId());
+      System.out.println("邮件　" + i + "　邮件ID:　" + re.getMessageId());*/
       re.getMailContent((Part) message[i]);
-      System.out.println("邮件　" + i + "　正文内容:　\r\n" + re.getBodyText());
-      re.setAttachPath("e:\\");
+//      System.out.println("邮件　" + i + "　正文内容:　\r\n" + re.getBodyText());
+//      re.setAttachPath("e:\\");
 //      re.saveAttachMent((Part) message[i]);
     }
   }
