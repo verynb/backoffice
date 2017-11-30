@@ -17,6 +17,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.cookie.Cookie;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
@@ -41,10 +42,6 @@ public class HttpUtils {
 
   /**
    * 执行GET 请求
-   * @param crawlMeta
-   * @param httpConf
-   * @return
-   * @throws Exception
    */
   private static HttpResponse doGet(CrawlMeta crawlMeta, CrawlHttpConf httpConf) throws Exception {
 
@@ -93,16 +90,38 @@ public class HttpUtils {
       httpPost.addHeader(head.getKey(), head.getValue());
     }
     HttpResponse response = httpClient.execute(httpPost);
-    log.info("请求参数------->"+httpPost.getParams().toString());
+    log.info("请求参数------->" + httpPost.getParams().toString());
     writeSession(cookieStore.getCookies());
     return response;
   }
 
-  private static void writeSession(List<Cookie> cookies){
+
+  public static HttpResponse doPostJson(CrawlMeta crawlMeta, CrawlHttpConf httpConf, String jsonParam)
+      throws Exception {
+    CookieStore cookieStore = new BasicCookieStore();
+    HttpClient httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
+    HttpPost httpPost = new HttpPost(crawlMeta.getUrl());
+    // 建立一个NameValuePair数组，用于存储欲传送的参数
+    StringEntity entity = new StringEntity(jsonParam, "utf-8");//解决中文乱码问题
+    entity.setContentEncoding("UTF-8");
+    entity.setContentType("application/json");
+    httpPost.setEntity(entity);
+    // 设置请求头
+    for (Map.Entry<String, String> head : httpConf.getRequestHeaders().entrySet()) {
+      httpPost.addHeader(head.getKey(), head.getValue());
+    }
+    HttpResponse response = httpClient.execute(httpPost);
+    log.info("请求参数------->" + httpPost.getParams().toString());
+    writeSession(cookieStore.getCookies());
+    return response;
+  }
+
+
+  private static void writeSession(List<Cookie> cookies) {
     List<LocalCookie> localCookies = cookies
         .stream()
         .map(c -> {
-          return new LocalCookie(c.getName(),c.getValue());
+          return new LocalCookie(c.getName(), c.getValue());
         }).collect(Collectors.toList());
     Session.writeSession(localCookies);
   }

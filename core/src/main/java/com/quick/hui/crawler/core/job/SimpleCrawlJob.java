@@ -7,6 +7,7 @@ import com.quick.hui.crawler.core.entity.TransferWallet;
 import com.quick.hui.crawler.core.entity.UserInfo;
 import com.quick.hui.crawler.core.task.GetReceiverTask;
 import com.quick.hui.crawler.core.entity.LoginAuthTokenData;
+import com.quick.hui.crawler.core.task.InitTask;
 import com.quick.hui.crawler.core.task.LoginAuthTokenTask;
 import com.quick.hui.crawler.core.task.LoginSuccessTask;
 import com.quick.hui.crawler.core.task.LoginTask;
@@ -30,6 +31,8 @@ public class SimpleCrawlJob extends AbstractJob {
 
   @Override
   public void beforeRun() {
+    InitTask.execute();
+
   }
 
   /**

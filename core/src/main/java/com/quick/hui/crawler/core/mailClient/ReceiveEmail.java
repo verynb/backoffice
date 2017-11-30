@@ -335,13 +335,13 @@ public class ReceiveEmail {
 
   public static void main(String args[]) throws Exception {
     String host = "pop.163.com"; //
-    String username = "m15928594217_2@163.com"; //
-    String password = "yuanjiang123"; //
+    String username = "wenfang@bookbitbtc.com"; //
+    String password = "Wen13825769146"; //
 
     Properties props = new Properties();
     props.setProperty("mail.store.protocol", "pop3");       // 协议
     props.setProperty("mail.pop3.port", "110");             // 端口
-    props.setProperty("mail.pop3.host", "pop3.163.com");    // pop3服务器
+    props.setProperty("mail.pop3.host", "pop3.mxhichina.com");    // pop3服务器
     Session session = Session.getInstance(props);
 
     Store store = session.getStore("pop3");
