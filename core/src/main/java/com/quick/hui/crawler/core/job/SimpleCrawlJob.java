@@ -5,6 +5,8 @@ import com.quick.hui.crawler.core.entity.TransferPageData;
 import com.quick.hui.crawler.core.entity.TransferParam;
 import com.quick.hui.crawler.core.entity.TransferWallet;
 import com.quick.hui.crawler.core.entity.UserInfo;
+import com.quick.hui.crawler.core.mailClient.MailToken;
+import com.quick.hui.crawler.core.mailClient.MailTokenData;
 import com.quick.hui.crawler.core.task.GetReceiverTask;
 import com.quick.hui.crawler.core.entity.LoginAuthTokenData;
 import com.quick.hui.crawler.core.task.InitTask;
@@ -14,6 +16,7 @@ import com.quick.hui.crawler.core.task.LoginTask;
 import com.quick.hui.crawler.core.task.SendMailTask;
 import com.quick.hui.crawler.core.task.TransferPageTask;
 import com.quick.hui.crawler.core.task.TransferTask;
+import java.util.List;
 import java.util.Optional;
 import lombok.Getter;
 import lombok.Setter;
@@ -71,7 +74,6 @@ public class SimpleCrawlJob extends AbstractJob {
 
   /**
    * 执行转账功能
-   * @throws InterruptedException
    */
   private void transfer() throws InterruptedException {
 
@@ -79,6 +81,9 @@ public class SimpleCrawlJob extends AbstractJob {
     UserInfo receiverInfo = GetReceiverTask.execute("xbya004");
     SendMailResult mailResult =
         SendMailTask.execute(getTransferPage.getAuthToken(), getTransferPage.getTransferUserId());
+    Thread.sleep(10000);
+    List<MailTokenData> tokenData = MailToken
+        .filterMails("wenfang@bookbitbtc.com", "Wen13825769146");
     if (getTransferPage.getTransferWallets()
         .stream()
         .filter(t -> t.getAmount() > 0).count() == 0) {
@@ -88,14 +93,18 @@ public class SimpleCrawlJob extends AbstractJob {
         .stream()
         .filter(t -> t.getAmount() > 0)
         .findFirst();
-    if(!wallet.isPresent()){
+    if (!wallet.isPresent()) {
 
-    }else {
+    } else {
+      System.out.print("wallet value======>"+wallet.get().toString());
+      System.out.print("token======>"+tokenData.get(0).getToken());
+      System.out.print("TransferUserId======>"+getTransferPage.getTransferUserId());
+      System.out.print("User_id======>"+receiverInfo.getUser_id());
       TransferParam param = new TransferParam(getTransferPage.getAuthToken(),
           "xbya004",
           wallet.get().getWalletId(),
           wallet.get().getAmount(),
-          "",
+          tokenData.get(0).getToken(),
           getTransferPage.getTransferUserId(),
           receiverInfo.getUser_id()
       );
