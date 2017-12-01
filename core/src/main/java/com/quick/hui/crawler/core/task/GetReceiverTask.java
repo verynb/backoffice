@@ -40,7 +40,7 @@ public class GetReceiverTask {
           .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
       return GsonUtil.jsonToObject(EntityUtils.toString(response.getEntity()), UserInfo.class);
     } catch (Exception e) {
-      return new UserInfo();
+      return null;
     }
   }
 }

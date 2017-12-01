@@ -9,6 +9,7 @@ import com.quick.hui.crawler.core.job.CrawJobResult;
 import com.quick.hui.crawler.core.utils.HttpUtils;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +44,9 @@ public class TransferPageTask {
 
       Element walletElement = doc.select("select[name=partition_transfer_partition[user_wallet_id]]").first();
 
+      if(Objects.isNull(walletElement)){
+        return new TransferPageData("", "", Lists.newArrayList());
+      }
       List<TransferWallet> transferWallets = walletElement.children().stream()
           .filter(e -> StringUtils.isNotBlank(e.val()))
           .map(e -> {

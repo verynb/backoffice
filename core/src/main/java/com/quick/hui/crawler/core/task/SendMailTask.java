@@ -37,9 +37,14 @@ public class SendMailTask {
     try {
       HttpResponse response = HttpUtils
           .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
-      return GsonUtil.jsonToObject(EntityUtils.toString(response.getEntity()), SendMailResult.class);
+      String returnStr=EntityUtils.toString(response.getEntity());
+      if(returnStr.contains("number_exceeded")){
+        return new SendMailResult("success","number_exceeded");
+      }else {
+        return GsonUtil.jsonToObject(EntityUtils.toString(response.getEntity()), SendMailResult.class);
+      }
     } catch (Exception e) {
-      return new SendMailResult();
+      return null;
     }
   }
 

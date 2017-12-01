@@ -35,20 +35,22 @@ public class LoginAuthTokenTask {
 
   public static LoginAuthTokenData execute() {
     CrawJobResult result = buildTask();
+    LoginAuthTokenData loginAuthTokenData = null;
     try {
       HttpResponse response = HttpUtils
           .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
       Document doc = Jsoup.parse(EntityUtils.toString(response.getEntity()));
       Element element = doc.select("input[name=authenticity_token]").first();
       if (!Objects.isNull(element)) {
-        return new LoginAuthTokenData(200, element.val());
+        loginAuthTokenData = new LoginAuthTokenData(200, element.val());
       } else {
-        return new LoginAuthTokenData(400, INCAPSULA_ERROR);
+        loginAuthTokenData = new LoginAuthTokenData(400, INCAPSULA_ERROR);
       }
     } catch (Exception e) {
-      return new LoginAuthTokenData(500, e.getMessage());
+      loginAuthTokenData = new LoginAuthTokenData(500, e.getMessage());
     }
-
+    System.out.println("loginAuthTokenData======>" + loginAuthTokenData.toString());
+    return loginAuthTokenData;
   }
 
 }

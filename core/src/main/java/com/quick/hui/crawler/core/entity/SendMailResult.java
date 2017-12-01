@@ -8,6 +8,12 @@ public class SendMailResult {
   private String status;
   private String error;
 
+  public SendMailResult(String status, String error) {
+    this.status = status;
+    this.error = error;
+  }
+  public SendMailResult(){}
+
   public String getStatus() {
     return status;
   }

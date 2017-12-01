@@ -34,7 +34,7 @@ public class MailToken {
     return store;
   }
 
-  public static List<MailTokenData> filterMails(String mail, String password){
+  public static List<MailTokenData> filterMails(String mail, String password) {
     Store store = null;
     Folder folder = null;
     List<MailTokenData> dataList = Lists.newArrayList();
@@ -52,9 +52,9 @@ public class MailToken {
         re.getMailContent((Part) message[i]);
         dataList.add(new MailTokenData(re.getToken(), re.getSentDate()));
       }
-      return dataList
+      dataList = dataList
           .stream()
-          .sorted(Comparator.comparing(MailTokenData::getDate))
+          .sorted(Comparator.comparing(MailTokenData::getDate).reversed())
           .collect(Collectors.toList());
     } catch (Exception e) {
       return dataList;
@@ -63,6 +63,7 @@ public class MailToken {
         folder.close(true);
         store.close();
       } catch (MessagingException e) {
+
       }
       return dataList;
     }

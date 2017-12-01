@@ -3,6 +3,7 @@ package com.quick.hui.crawler.core.job;
 import com.quick.hui.crawler.core.entity.SendMailResult;
 import com.quick.hui.crawler.core.entity.TransferPageData;
 import com.quick.hui.crawler.core.entity.TransferParam;
+import com.quick.hui.crawler.core.entity.TransferUserInfo;
 import com.quick.hui.crawler.core.entity.TransferWallet;
 import com.quick.hui.crawler.core.entity.UserInfo;
 import com.quick.hui.crawler.core.mailClient.MailToken;
@@ -17,10 +18,13 @@ import com.quick.hui.crawler.core.task.SendMailTask;
 import com.quick.hui.crawler.core.task.TransferPageTask;
 import com.quick.hui.crawler.core.task.TransferTask;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 
 /**
  * 最简单的一个爬虫任务
@@ -34,7 +38,7 @@ public class SimpleCrawlJob extends AbstractJob {
 
   @Override
   public void beforeRun() {
-    InitTask.execute();
+//    InitTask.execute();
 
   }
 
@@ -56,62 +60,69 @@ public class SimpleCrawlJob extends AbstractJob {
   @Override
   public void doFetchPage() throws Exception {
 
+    TransferUserInfo userInfo = new TransferUserInfo("lhha001", "hh8389lhhl",
+        "lianghuihua01@bookbitbtc.com", "SHENzen007v", "lhha002");
+
     //取登陆页面的authToken
     LoginAuthTokenData tokenData = LoginAuthTokenTask.execute();
-    if (tokenData.getCode() != 200) {
-      log.debug(tokenData.toString());
-    }
-    //登录
-    int loginCode = LoginTask.execute(tokenData.getResult(), "xbya003", "xby19800716x");
-    //登录成功
-    if (loginCode == 302) {
-      //登录重定向后的页面
-      int loginSuccessCode = LoginSuccessTask.execute();
-      transfer();
+    if (tokenData.getCode() == 200) {
+      //登录
+      int loginCode = LoginTask.execute(tokenData.getResult(),
+          userInfo.getUserName(), userInfo.getPassword());
+      //登录成功
+      if (loginCode == 302) {
+        //登录重定向后的页面
+        int loginSuccessCode = LoginSuccessTask.execute();
+        if (loginSuccessCode == 200) {
+          transfer(userInfo.getEmail(), userInfo.getMailPassword(), userInfo.getTransferTo());
+        }
+      }
     }
   }
-
 
   /**
    * 执行转账功能
    */
-  private void transfer() throws InterruptedException {
+  private void transfer(String email, String mailPassword, String transferTo) throws InterruptedException {
 
     TransferPageData getTransferPage = TransferPageTask.execute();
-    UserInfo receiverInfo = GetReceiverTask.execute("xbya004");
-    SendMailResult mailResult =
-        SendMailTask.execute(getTransferPage.getAuthToken(), getTransferPage.getTransferUserId());
-    Thread.sleep(10000);
-    List<MailTokenData> tokenData = MailToken
-        .filterMails("wenfang@bookbitbtc.com", "Wen13825769146");
-    if (getTransferPage.getTransferWallets()
-        .stream()
-        .filter(t -> t.getAmount() > 0).count() == 0) {
-      return;
-    }
-    Optional<TransferWallet> wallet = getTransferPage.getTransferWallets()
-        .stream()
-        .filter(t -> t.getAmount() > 0)
-        .findFirst();
-    if (!wallet.isPresent()) {
+    if (CollectionUtils.isNotEmpty(getTransferPage.getTransferWallets())) {
+      List<TransferWallet> filterList = getTransferPage.getTransferWallets()
+          .stream()
+          .filter(t -> t.getAmount() > 0)
+          .collect(Collectors.toList());
+      if (CollectionUtils.isEmpty(filterList)) {
+        return;
+      }
+      TransferWallet wallet = filterList.get(0);
+      UserInfo receiverInfo = GetReceiverTask.execute(transferTo);
+      if (!Objects.isNull(receiverInfo)) {
 
-    } else {
-      System.out.print("wallet value======>"+wallet.get().toString());
-      System.out.print("token======>"+tokenData.get(0).getToken());
-      System.out.print("TransferUserId======>"+getTransferPage.getTransferUserId());
-      System.out.print("User_id======>"+receiverInfo.getUser_id());
-      TransferParam param = new TransferParam(getTransferPage.getAuthToken(),
-          "xbya004",
-          wallet.get().getWalletId(),
-          wallet.get().getAmount(),
-          tokenData.get(0).getToken(),
-          getTransferPage.getTransferUserId(),
-          receiverInfo.getUser_id()
-      );
-      TransferTask.execute(param);
+        SendMailResult mailResult =
+            SendMailTask.execute(getTransferPage.getAuthToken(), getTransferPage.getTransferUserId());
+        if (!Objects.isNull(mailResult)) {//邮件发送成功的情况
+          Thread.sleep(10000);
+          List<MailTokenData> tokenData = MailToken
+              .filterMails(email, mailPassword);
+          System.out.print("wallet value======>" + wallet.toString());
+          System.out.print("token======>" + tokenData.get(0).getToken());
+          System.out.print("TransferUserId======>" + getTransferPage.getTransferUserId());
+          System.out.print("User_id======>" + receiverInfo.getUser_id());
+          TransferParam param = new TransferParam(getTransferPage.getAuthToken(),
+              transferTo,
+              wallet.getWalletId(),
+              wallet.getAmount(),
+              tokenData.get(0).getToken(),
+              getTransferPage.getTransferUserId(),
+              receiverInfo.getUser_id()
+          );
+          int transferCode = TransferTask.execute(param);
+          if (transferCode==302) {
+            Thread.sleep(5000);
+            transfer(email, mailPassword, transferTo);
+          }
+        }
+      }
     }
-    Thread.sleep(5000);
-    transfer();
   }
-
 }
