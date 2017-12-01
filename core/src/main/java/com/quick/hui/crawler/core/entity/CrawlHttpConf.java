@@ -34,7 +34,7 @@ public class CrawlHttpConf {
     DEFAULT_HEADERS.put("accept",
         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
     DEFAULT_HEADERS.put("connection", "Keep-Alive");
-    DEFAULT_HEADERS.put("user-agent", "Mozilla/5.0");
+    DEFAULT_HEADERS.put("user-agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36");
     DEFAULT_HEADERS.put("accept-encoding", "gzip,deflate,sdch,br");
     DEFAULT_HEADERS.put("accept-language", "zh-CN,zh;q=0.8");
     DEFAULT_HEADERS.put("cache-control", "max-age=0");
@@ -51,18 +51,6 @@ public class CrawlHttpConf {
   }
 
   public CrawlHttpConf buildCookie() {
-    if (Session.get() == null || CollectionUtils.isEmpty(Session.getCookies())) {
-      List<LocalCookie> localCookies = Lists.newArrayList(new LocalCookie("visid_incap_796901",
-              "oCnBUj72QD2NNBamQUieRtuWH1oAAAAAQUIPAAAAAABrqW+VJkqE+rCGcnI3hEdp"),
-          new LocalCookie("_bidsbackoffice_sessions",
-              "WEVsWXU1ZGUyVXRsRTRLYU1qQmJ1ZmdadkJ1aHVkc2dkVy9MeStsRmtlWWhKZGdUK3U2QjJtY1RURUQzZU15M2ZuRnhKa2pBakRQb1M4cHJicVl5ZGl1OFRrWXdFeCs5eDhJd2tEYTVHeTV0OSthWU9wWVhzUlB3MXR1QVV6cHFwQTI0QlgzaytSMStycGpTVGZxKy9BPT0tLXBMSHlwRjFXMnY4TTJVSnZXcE5sNWc9PQ%3D%3D--771405c24c5553c9e8388bd4dd7f9c716f3a6d77"),
-          new LocalCookie("nlbi_796901",
-              "BBQgLo2DuCHIeZneLMejiQAAAABikPZwoBZ48CYoXixMLo52"),
-          new LocalCookie("incap_ses_877_796901",
-              "EmmaNaxCLm7Dx/iA77orDBiwIFoAAAAAvQpZSsPPk6aeOwW8sZ57NQ=="));
-      Session session = Session.buildSession(localCookies);
-      Session.persistenceCurrentSession(session);
-    }
     List<String> cookieStrings = Session
         .getCookies()
         .stream()

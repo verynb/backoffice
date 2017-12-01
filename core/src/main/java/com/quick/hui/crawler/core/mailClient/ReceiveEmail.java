@@ -54,10 +54,6 @@ public class ReceiveEmail {
     if (part.isMimeType("text/plain") && conName == false) {
       // text/plain 类型
       bodyText.append((String) part.getContent());
-      String str = replaceBlank(part.getContent().toString());
-      System.out.println("token====" + str);
-      String token = str.substring(str.lastIndexOf("*") + 1, str.lastIndexOf("*") + 33);
-      System.out.println("token====" + token);
     } else if (part.isMimeType("text/html") && conName == false) {
       bodyText.append((String) part.getContent());
     } else if (part.isMimeType("multipart/alternative")) {

@@ -63,7 +63,7 @@ public class InitTask {
     return result;
   }
 
-  public static void  reRecaptchaEcecute(String src) throws Exception {
+  public static void reRecaptchaEcecute(String src) throws Exception {
     CrawJobResult result = buildIncapsulaResourceTask(src);
     HttpResponse resourceResponse = HttpUtils
         .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
@@ -72,17 +72,18 @@ public class InitTask {
     Element recaptchaKey = resourceDoc.select("div[class=g-recaptcha]").first();
     if (!Objects.isNull(recaptchaKey)) {
 
-      System.out.println("div[class=g-recaptcha]======"+recaptchaKey);
+      System.out.println("div[class=g-recaptcha]======" + recaptchaKey);
 
-      System.out.println("data-sitekey======"+recaptchaKey.attr("data-sitekey"));
+      System.out.println("data-sitekey======" + recaptchaKey.attr("data-sitekey"));
       CrawJobResult recaptchaResult = buildRecaptchaResourceTask(recaptchaKey.attr("data-sitekey"));
 
 //      String jsonParam="{"+"g-recaptcha-response:"+recaptchaKey.attr("data-sitekey")+"}";
-      Map<String,String> jsonParam= Maps.newHashMap();
-      jsonParam.put("g-recaptcha-response",recaptchaKey.attr("data-sitekey"));
-      System.out.println("jsonParam=======>"+ GsonUtil.objectTojson(jsonParam));
+      Map<String, String> jsonParam = Maps.newHashMap();
+      jsonParam.put("g-recaptcha-response", recaptchaKey.attr("data-sitekey"));
+      System.out.println("jsonParam=======>" + GsonUtil.objectTojson(jsonParam));
       HttpResponse recaptchaResponse = HttpUtils
-          .doPostJson(recaptchaResult.getCrawlMeta(), recaptchaResult.getHttpConf().buildCookie(),GsonUtil.objectTojson(jsonParam));
+          .doPostJson(recaptchaResult.getCrawlMeta(), recaptchaResult.getHttpConf().buildCookie(),
+              GsonUtil.objectTojson(jsonParam));
       if (recaptchaResponse.getStatusLine().getStatusCode() == 200) {
         Thread.sleep(2000);
         execute();
@@ -108,6 +109,24 @@ public class InitTask {
       }
     } catch (Exception e) {
       return new LoginAuthTokenData(500, e.getMessage());
+    }
+  }
+
+
+  public static int executeSucess() {
+    CrawJobResult result = buildFirstPageTask();
+    try {
+      HttpResponse response = HttpUtils
+          .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
+      Document doc = Jsoup.parse(EntityUtils.toString(response.getEntity()));
+      Element element = doc.select("iframe[src]").first();
+      if (!Objects.isNull(element)) {
+        return 400;
+      } else {
+        return 200;
+      }
+    } catch (Exception e) {
+      return 500;
     }
   }
 

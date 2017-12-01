@@ -1,5 +1,7 @@
 package com.quick.hui.crawler.core.entity;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Created by yuanj on 2017/12/1.
  */
@@ -62,5 +64,38 @@ public class TransferUserInfo {
 
   public void setTransferTo(String transferTo) {
     this.transferTo = transferTo;
+  }
+
+
+  public Boolean filterUserInfo() {
+    Boolean status = true;
+    if (StringUtils.isBlank(this.getUserName())) {
+      status = false;
+    }
+    if (StringUtils.isBlank(this.getPassword())) {
+      status = false;
+    }
+    if (StringUtils.isBlank(this.getEmail())) {
+      status = false;
+    }
+    if (StringUtils.isBlank(this.getMailPassword())) {
+      status = false;
+    }
+    if (StringUtils.isBlank(this.getTransferTo())) {
+      status = false;
+    }
+    return status;
+  }
+
+
+  @Override
+  public String toString() {
+    return "TransferUserInfo{" +
+        "转出帐号='" + userName + '\'' +
+        ", 转出帐号密码='" + password + '\'' +
+        ", 转出帐号邮箱='" + email + '\'' +
+        ", 邮箱密码='" + mailPassword + '\'' +
+        ", 接收帐号='" + transferTo + '\'' +
+        '}';
   }
 }
