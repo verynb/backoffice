@@ -29,7 +29,7 @@ public class TransferTask {
     result.getHttpConf().getRequestParams().put("transfer_to", param.getTransferTo());
     result.getHttpConf().getRequestParams()
         .put("partition_transfer_partition[user_wallet_id]", param.getUserWalletId());
-    result.getHttpConf().getRequestParams().put("partition_transfer_partition[amount]", "1.0");
+    result.getHttpConf().getRequestParams().put("partition_transfer_partition[amount]", param.getAmount());
 
     result.getHttpConf().getRequestParams()
         .put("partition_transfer_partition[token]", param.getToken());
