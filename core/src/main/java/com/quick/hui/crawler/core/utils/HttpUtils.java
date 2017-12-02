@@ -16,6 +16,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -86,32 +87,35 @@ public class HttpUtils {
     }
     httpPost.setEntity(new UrlEncodedFormEntity(params, HTTP.UTF_8));
     // 设置请求头
+    System.out.println("请求参数------->" + params.toString());
     for (Map.Entry<String, String> head : httpConf.getRequestHeaders().entrySet()) {
       httpPost.addHeader(head.getKey(), head.getValue());
     }
     HttpResponse response = httpClient.execute(httpPost);
-//    log.info("请求参数------->" + httpPost.getParams().toString());
+//    System.out.print("请求参数------->" + httpPost.getParams().toString());
     writeSession(cookieStore.getCookies());
     return response;
   }
 
 
-  public static HttpResponse doPostJson(CrawlMeta crawlMeta, CrawlHttpConf httpConf, String jsonParam)
+  public static HttpResponse doPostJson(CrawlMeta crawlMeta, CrawlHttpConf httpConf)
       throws Exception {
     CookieStore cookieStore = new BasicCookieStore();
     HttpClient httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
     HttpPost httpPost = new HttpPost(crawlMeta.getUrl());
     // 建立一个NameValuePair数组，用于存储欲传送的参数
-    StringEntity entity = new StringEntity(jsonParam, "utf-8");//解决中文乱码问题
-    entity.setContentEncoding("UTF-8");
-    entity.setContentType("application/json");
-    httpPost.setEntity(entity);
+    List<NameValuePair> params = new ArrayList<>();
+    for (Map.Entry<String, Object> param : httpConf.getRequestParams().entrySet()) {
+      params.add(new BasicNameValuePair(param.getKey(), param.getValue().toString()));
+    }
+    httpPost.setEntity(new UrlEncodedFormEntity(params, HTTP.UTF_8));
     // 设置请求头
+    System.out.println("请求参数------->" + params.toString());
     for (Map.Entry<String, String> head : httpConf.getRequestHeaders().entrySet()) {
-      httpPost.addHeader(head.getKey(), head.getValue());
+      httpPost.setHeader(head.getKey(), head.getValue());
     }
     HttpResponse response = httpClient.execute(httpPost);
-//    log.info("请求参数------->" + httpPost.getParams().toString());
+//    System.out.print("请求参数------->" + httpPost.getParams().toString());
     writeSession(cookieStore.getCookies());
     return response;
   }
@@ -122,9 +126,6 @@ public class HttpUtils {
         .stream()
         .map(c -> {
           return new LocalCookie(c.getName(), c.getValue());
-
-
-
         }).collect(Collectors.toList());
     Session.writeSession(localCookies);
   }

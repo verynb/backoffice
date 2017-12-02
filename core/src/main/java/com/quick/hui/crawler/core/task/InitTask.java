@@ -82,8 +82,8 @@ public class InitTask {
       jsonParam.put("g-recaptcha-response", recaptchaKey.attr("data-sitekey"));
       System.out.println("jsonParam=======>" + GsonUtil.objectTojson(jsonParam));
       HttpResponse recaptchaResponse = HttpUtils
-          .doPostJson(recaptchaResult.getCrawlMeta(), recaptchaResult.getHttpConf().buildCookie(),
-              GsonUtil.objectTojson(jsonParam));
+          .doPostJson(recaptchaResult.getCrawlMeta(), recaptchaResult.getHttpConf().buildCookie()
+              );
       if (recaptchaResponse.getStatusLine().getStatusCode() == 200) {
         Thread.sleep(2000);
         execute();

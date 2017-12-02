@@ -29,12 +29,20 @@ public class TransferTask {
     result.getHttpConf().getRequestParams().put("transfer_to", param.getTransferTo());
     result.getHttpConf().getRequestParams()
         .put("partition_transfer_partition[user_wallet_id]", param.getUserWalletId());
-    result.getHttpConf().getRequestParams().put("partition_transfer_partition[amount]", param.getAmount());
+    result.getHttpConf().getRequestParams().put("partition_transfer_partition[amount]", "1.0");
 
-    result.getHttpConf().getRequestParams().put("partition_transfer_partition[token]", param.getToken());
-    result.getHttpConf().getRequestParams().put("partition_transfer_partition[user_id]", param.getUserId());
-    result.getHttpConf().getRequestParams().put("partition_transfer_partition[receiver_id]", param.getReceiverId());
-    result.getHttpConf().getRequestParams().put("partition_transfer_partition[receiver_wallet_id]", "");
+    result.getHttpConf().getRequestParams()
+        .put("partition_transfer_partition[token]", param.getToken());
+    result.getHttpConf().getRequestParams()
+        .put("partition_transfer_partition[user_id]", param.getUserId());
+    result.getHttpConf().getRequestParams()
+        .put("partition_transfer_partition[receiver_id]", param.getReceiverId());
+    result.getHttpConf().getRequestParams()
+        .put("partition_transfer_partition[receiver_wallet_id]", "");
+    result.getHttpConf().getRequestHeaders().put("Content-type", "application/x-www-form-urlencoded;charset=UTF-8");
+    result.getHttpConf().getRequestHeaders().put("referer",URL);
+    result.getHttpConf().getRequestHeaders().put("origin","https://www.bitbackoffice.com");
+    result.getHttpConf().getRequestHeaders().put("x-requested-with","XMLHttpRequest");
     return result;
   }
 
@@ -42,7 +50,7 @@ public class TransferTask {
     CrawJobResult result = buildTask(param);
     try {
       HttpResponse response = HttpUtils
-          .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
+          .doPostJson(result.getCrawlMeta(), result.getHttpConf().buildCookie());
       return response.getStatusLine().getStatusCode();
     } catch (Exception e) {
       return 500;

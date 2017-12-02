@@ -41,7 +41,7 @@ public class SendMailTask {
       if(returnStr.contains("number_exceeded")){
         return new SendMailResult("success","number_exceeded");
       }else {
-        return GsonUtil.jsonToObject(EntityUtils.toString(response.getEntity()), SendMailResult.class);
+        return GsonUtil.jsonToObject(returnStr, SendMailResult.class);
       }
     } catch (Exception e) {
       return null;

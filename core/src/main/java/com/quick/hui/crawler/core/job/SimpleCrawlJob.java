@@ -158,7 +158,7 @@ public class SimpleCrawlJob extends AbstractJob {
           );
           System.out.println("转账参数======>" + param.toString());
           int transferCode = TransferTask.execute(param);
-          if (transferCode == 302) {
+          if (transferCode == 200) {
             System.out.println("转账成功,休眠5s,执行下一轮转账");
             Thread.sleep(5000);
             transfer(email, mailPassword, transferTo);
