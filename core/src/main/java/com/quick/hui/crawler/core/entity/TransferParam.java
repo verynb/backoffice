@@ -81,4 +81,17 @@ public class TransferParam {
   public void setReceiverId(String receiverId) {
     this.receiverId = receiverId;
   }
+
+  @Override
+  public String toString() {
+    return "TransferParam{" +
+        "authenticityToken='" + authenticityToken + '\'' +
+        ", transferTo='" + transferTo + '\'' +
+        ", userWalletId='" + userWalletId + '\'' +
+        ", amount=" + amount +
+        ", token='" + token + '\'' +
+        ", userId='" + userId + '\'' +
+        ", receiverId='" + receiverId + '\'' +
+        '}';
+  }
 }

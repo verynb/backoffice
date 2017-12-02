@@ -90,7 +90,7 @@ public class HttpUtils {
       httpPost.addHeader(head.getKey(), head.getValue());
     }
     HttpResponse response = httpClient.execute(httpPost);
-    log.info("请求参数------->" + httpPost.getParams().toString());
+//    log.info("请求参数------->" + httpPost.getParams().toString());
     writeSession(cookieStore.getCookies());
     return response;
   }
@@ -111,7 +111,7 @@ public class HttpUtils {
       httpPost.addHeader(head.getKey(), head.getValue());
     }
     HttpResponse response = httpClient.execute(httpPost);
-    log.info("请求参数------->" + httpPost.getParams().toString());
+//    log.info("请求参数------->" + httpPost.getParams().toString());
     writeSession(cookieStore.getCookies());
     return response;
   }
@@ -122,6 +122,9 @@ public class HttpUtils {
         .stream()
         .map(c -> {
           return new LocalCookie(c.getName(), c.getValue());
+
+
+
         }).collect(Collectors.toList());
     Session.writeSession(localCookies);
   }

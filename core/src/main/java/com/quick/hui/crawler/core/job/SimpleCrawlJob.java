@@ -78,6 +78,8 @@ public class SimpleCrawlJob extends AbstractJob {
     }
     if (InitTask.executeSucess() != 200) {
       throw new RuntimeException("cookies初始化失败，请输入有效cookie");
+    }else{
+      System.out.print("初始化cookie成功");
     }
   }
 
@@ -102,11 +104,13 @@ public class SimpleCrawlJob extends AbstractJob {
     //取登陆页面的authToken
     LoginAuthTokenData tokenData = LoginAuthTokenTask.execute();
     if (tokenData.getCode() == 200) {
+      System.out.println("登录页面抓取成功，auth_token===>"+tokenData.getResult());
       //登录
       int loginCode = LoginTask.execute(tokenData.getResult(),
           this.userInfo.getUserName(), this.userInfo.getPassword());
       //登录成功
       if (loginCode == 302) {
+        System.out.println("登录成功，auth_token===>"+tokenData.getResult());
         //登录重定向后的页面
         int loginSuccessCode = LoginSuccessTask.execute();
         if (loginSuccessCode == 200) {
@@ -123,27 +127,27 @@ public class SimpleCrawlJob extends AbstractJob {
 
     TransferPageData getTransferPage = TransferPageTask.execute();
     if (CollectionUtils.isNotEmpty(getTransferPage.getTransferWallets())) {
+      System.out.println("转账页面抓取成功，转账数据===>"+getTransferPage.getTransferWallets().toString());
       List<TransferWallet> filterList = getTransferPage.getTransferWallets()
           .stream()
           .filter(t -> t.getAmount() > 0)
           .collect(Collectors.toList());
       if (CollectionUtils.isEmpty(filterList)) {
+        System.out.println("转账金额没有大于0的数据");
         return;
       }
       TransferWallet wallet = filterList.get(0);
       UserInfo receiverInfo = GetReceiverTask.execute(transferTo);
       if (!Objects.isNull(receiverInfo)) {
-
+        System.out.println("获取转出账户信息成功===>"+receiverInfo.toString());
         SendMailResult mailResult =
             SendMailTask.execute(getTransferPage.getAuthToken(), getTransferPage.getTransferUserId());
         if (!Objects.isNull(mailResult)) {//邮件发送成功的情况
+          System.out.println("邮件发送成功");
           Thread.sleep(this.mailSendReceiveSpace);
           List<MailTokenData> tokenData = MailToken
               .filterMails(email, mailPassword);
-          System.out.print("wallet value======>" + wallet.toString());
-          System.out.print("token======>" + tokenData.get(0).getToken());
-          System.out.print("TransferUserId======>" + getTransferPage.getTransferUserId());
-          System.out.print("User_id======>" + receiverInfo.getUser_id());
+          System.out.println("邮件解析成功====>"+tokenData.toString());
           TransferParam param = new TransferParam(getTransferPage.getAuthToken(),
               transferTo,
               wallet.getWalletId(),
@@ -152,10 +156,13 @@ public class SimpleCrawlJob extends AbstractJob {
               getTransferPage.getTransferUserId(),
               receiverInfo.getUser_id()
           );
+          System.out.println("转账参数======>" + param.toString());
           int transferCode = TransferTask.execute(param);
           if (transferCode == 302) {
+            System.out.println("转账成功,休眠5s,执行下一轮转账");
             Thread.sleep(5000);
             transfer(email, mailPassword, transferTo);
+
           }
         }
       }

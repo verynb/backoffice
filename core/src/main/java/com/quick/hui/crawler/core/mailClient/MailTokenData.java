@@ -32,4 +32,12 @@ public class MailTokenData {
   public void setDate(long date) {
     this.date = date;
   }
+
+  @Override
+  public String toString() {
+    return "MailTokenData{" +
+        "token='" + token + '\'' +
+        ", date=" + date +
+        '}';
+  }
 }

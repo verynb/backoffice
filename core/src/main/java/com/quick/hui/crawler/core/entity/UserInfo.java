@@ -32,4 +32,13 @@ public class UserInfo {
   public void setResponse(Boolean response) {
     this.response = response;
   }
+
+  @Override
+  public String toString() {
+    return "UserInfo{" +
+        "user_id='" + user_id + '\'' +
+        ", name='" + name + '\'' +
+        ", response=" + response +
+        '}';
+  }
 }
