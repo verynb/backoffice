@@ -33,7 +33,4 @@ local.properties
 .idea/
 
 # maven
-berkely/target
-core/target
-common/target
-demo/target
+/target
