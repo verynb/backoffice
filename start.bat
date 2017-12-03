@@ -1,0 +1,1 @@
+java -jar bitbackoffice.jar cookie=./cookies.csv userData=./account.csv
