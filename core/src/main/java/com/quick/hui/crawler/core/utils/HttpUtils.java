@@ -87,12 +87,10 @@ public class HttpUtils {
     }
     httpPost.setEntity(new UrlEncodedFormEntity(params, HTTP.UTF_8));
     // 设置请求头
-    System.out.println("请求参数------->" + params.toString());
     for (Map.Entry<String, String> head : httpConf.getRequestHeaders().entrySet()) {
       httpPost.addHeader(head.getKey(), head.getValue());
     }
     HttpResponse response = httpClient.execute(httpPost);
-//    System.out.print("请求参数------->" + httpPost.getParams().toString());
     writeSession(cookieStore.getCookies());
     return response;
   }
@@ -110,12 +108,10 @@ public class HttpUtils {
     }
     httpPost.setEntity(new UrlEncodedFormEntity(params, HTTP.UTF_8));
     // 设置请求头
-    System.out.println("请求参数------->" + params.toString());
     for (Map.Entry<String, String> head : httpConf.getRequestHeaders().entrySet()) {
       httpPost.setHeader(head.getKey(), head.getValue());
     }
     HttpResponse response = httpClient.execute(httpPost);
-//    System.out.print("请求参数------->" + httpPost.getParams().toString());
     writeSession(cookieStore.getCookies());
     return response;
   }

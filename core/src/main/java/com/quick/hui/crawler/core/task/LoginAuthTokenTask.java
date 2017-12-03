@@ -4,6 +4,7 @@ import com.quick.hui.crawler.core.entity.CrawlHttpConf.HttpMethod;
 import com.quick.hui.crawler.core.entity.CrawlMeta;
 import com.quick.hui.crawler.core.entity.LoginAuthTokenData;
 import com.quick.hui.crawler.core.job.CrawJobResult;
+import com.quick.hui.crawler.core.job.SimpleCrawlJob;
 import com.quick.hui.crawler.core.utils.HttpUtils;
 import java.util.HashSet;
 import java.util.Objects;
@@ -13,12 +14,14 @@ import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by yuanj on 2017/11/27.
  */
 public class LoginAuthTokenTask {
-
+  private static Logger logger = LoggerFactory.getLogger(LoginAuthTokenTask.class);
   private static String URL = "https://www.bitbackoffice.com/auth/login";
 
   private static String INCAPSULA_ERROR = "Request unsuccessful. Incapsula incident ID: 877000090238199605-578629079485186202";
@@ -44,12 +47,14 @@ public class LoginAuthTokenTask {
       if (!Objects.isNull(element)) {
         loginAuthTokenData = new LoginAuthTokenData(200, element.val());
       } else {
+        logger.info("获取登录页面auth_token失败");
         loginAuthTokenData = new LoginAuthTokenData(400, INCAPSULA_ERROR);
       }
     } catch (Exception e) {
-      loginAuthTokenData = new LoginAuthTokenData(500, e.getMessage());
+      logger.info("获取登录页面请求异常"+e.getMessage());
+      return new LoginAuthTokenData(500, e.getMessage());
     }
-    System.out.println("loginAuthTokenData======>" + loginAuthTokenData.toString());
+    logger.info("获取登录页面auth_token成功auth_token:"+loginAuthTokenData.getResult());
     return loginAuthTokenData;
   }
 

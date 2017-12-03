@@ -14,12 +14,15 @@ import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by yuanj on 2017/11/27.
  */
 public class LoginSuccessTask {
 
+  private static Logger logger = LoggerFactory.getLogger(LoginSuccessTask.class);
   private static String URL = "https://www.bitbackoffice.com";
 
   public static CrawJobResult buildTask() {
@@ -36,9 +39,11 @@ public class LoginSuccessTask {
     try {
       HttpResponse response = HttpUtils
           .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
+      logger.info("线程"+Thread.currentThread().getName()+"登录后获取主页成功responseCode:" + response.getStatusLine().getStatusCode());
       return response.getStatusLine().getStatusCode();
     } catch (Exception e) {
+      logger.error("线程"+Thread.currentThread().getName()+"登录后获取主页请求异常"+e.getMessage());
       return 500;
     }
   }
-  }
+}

@@ -28,6 +28,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 最简单的一个爬虫任务
@@ -38,7 +40,7 @@ import org.apache.commons.collections.CollectionUtils;
 @Setter
 @Slf4j
 public class SimpleCrawlJob extends AbstractJob {
-
+  private static Logger logger = LoggerFactory.getLogger(SimpleCrawlJob.class);
   private TransferUserInfo userInfo;
   //发邮件与收邮件时间间隔，默认10s
   private Long mailSendReceiveSpace;
@@ -56,17 +58,17 @@ public class SimpleCrawlJob extends AbstractJob {
     this.requestSpace = requestSpace == null ? 2000L : requestSpace;
     this.cookies = cookies;
   }
-
   @Override
   public void beforeRun() {
 //    InitTask.execute();
     initCookie();
   }
-
   private void initCookie() {
+    logger.info("线程"+Thread.currentThread().getName()+"开始初始化cookie");
     if (Session.get() == null || CollectionUtils.isEmpty(Session.getCookies())) {
 
       if (Objects.isNull(cookies)) {
+        logger.info("请初始化cookies");
         throw new RuntimeException("请初始化cookies");
       }
       List<LocalCookie> localCookies = Lists.newArrayList();
@@ -77,9 +79,10 @@ public class SimpleCrawlJob extends AbstractJob {
       Session.persistenceCurrentSession(session);
     }
     if (InitTask.executeSucess() != 200) {
-      throw new RuntimeException("cookies初始化失败，请输入有效cookie");
+      logger.info("线程"+Thread.currentThread().getName()+"cookies初始化失败，请输入有效cookie");
+      throw new RuntimeException("线程"+Thread.currentThread().getName()+"cookies初始化失败，请输入有效cookie");
     }else{
-      System.out.print("初始化cookie成功");
+      logger.info("线程"+Thread.currentThread().getName()+"初始化cookie成功");
     }
   }
 
@@ -100,18 +103,18 @@ public class SimpleCrawlJob extends AbstractJob {
    */
   @Override
   public void doFetchPage() throws Exception {
-
+    logger.info("线程"+Thread.currentThread().getName()+"开始抓取登录页面");
     //取登陆页面的authToken
     LoginAuthTokenData tokenData = LoginAuthTokenTask.execute();
     if (tokenData.getCode() == 200) {
-      System.out.println("登录页面抓取成功，auth_token===>"+tokenData.getResult());
       //登录
+      logger.info("线程"+Thread.currentThread().getName()+"开始登录");
       int loginCode = LoginTask.execute(tokenData.getResult(),
           this.userInfo.getUserName(), this.userInfo.getPassword());
       //登录成功
       if (loginCode == 302) {
-        System.out.println("登录成功，auth_token===>"+tokenData.getResult());
         //登录重定向后的页面
+        logger.info("线程"+Thread.currentThread().getName()+"开始抓取登录成功后跳转");
         int loginSuccessCode = LoginSuccessTask.execute();
         if (loginSuccessCode == 200) {
           transfer(this.userInfo.getEmail(), this.userInfo.getMailPassword(), this.userInfo.getTransferTo());
@@ -119,35 +122,32 @@ public class SimpleCrawlJob extends AbstractJob {
       }
     }
   }
-
   /**
    * 执行转账功能
    */
   private void transfer(String email, String mailPassword, String transferTo) throws InterruptedException {
-
+    logger.info("线程"+Thread.currentThread().getName()+"开始抓取抓取转账页面数据");
     TransferPageData getTransferPage = TransferPageTask.execute();
     if (CollectionUtils.isNotEmpty(getTransferPage.getTransferWallets())) {
-      System.out.println("转账页面抓取成功，转账数据===>"+getTransferPage.getTransferWallets().toString());
       List<TransferWallet> filterList = getTransferPage.getTransferWallets()
           .stream()
           .filter(t -> t.getAmount() > 0)
           .collect(Collectors.toList());
       if (CollectionUtils.isEmpty(filterList)) {
-        System.out.println("转账金额没有大于0的数据");
+        logger.info("线程"+Thread.currentThread().getName()+"转账金额没有大于0的数据");
         return;
       }
       TransferWallet wallet = filterList.get(0);
       UserInfo receiverInfo = GetReceiverTask.execute(transferTo);
       if (!Objects.isNull(receiverInfo)) {
-        System.out.println("获取转出账户信息成功===>"+receiverInfo.toString());
+        logger.info("线程"+Thread.currentThread().getName()+"获取转出账户信息成功===>"+receiverInfo.toString());
         SendMailResult mailResult =
             SendMailTask.execute(getTransferPage.getAuthToken(), getTransferPage.getTransferUserId());
         if (!Objects.isNull(mailResult)) {//邮件发送成功的情况
-          System.out.println("邮件发送成功");
           Thread.sleep(this.mailSendReceiveSpace);
           List<MailTokenData> tokenData = MailToken
               .filterMails(email, mailPassword);
-          System.out.println("邮件解析成功====>"+tokenData.toString());
+          logger.info("线程"+Thread.currentThread().getName()+"邮件解析成功====>"+tokenData.toString());
           TransferParam param = new TransferParam(getTransferPage.getAuthToken(),
               transferTo,
               wallet.getWalletId(),
@@ -156,13 +156,14 @@ public class SimpleCrawlJob extends AbstractJob {
               getTransferPage.getTransferUserId(),
               receiverInfo.getUser_id()
           );
-          System.out.println("转账参数======>" + param.toString());
+          logger.info("线程"+Thread.currentThread().getName()+"线程"+Thread.currentThread().getName()+"开始转账");
+          logger.info("线程"+Thread.currentThread().getName()+"转账参数======>" + param.toString());
           int transferCode = TransferTask.execute(param);
           if (transferCode == 200) {
-            System.out.println("转账成功,休眠5s,执行下一轮转账");
+            logger.info("线程"+Thread.currentThread().getName()+"转账成功，休眠5s执行下一轮转账");
             Thread.sleep(5000);
+            logger.info("线程"+Thread.currentThread().getName()+"下一轮转账开始");
             transfer(email, mailPassword, transferTo);
-
           }
         }
       }

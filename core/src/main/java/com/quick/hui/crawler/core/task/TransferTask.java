@@ -11,12 +11,14 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by yuanj on 2017/11/27.
  */
 public class TransferTask {
-
+  private static Logger logger = LoggerFactory.getLogger(TransferTask.class);
   private static String URL = "https://www.bitbackoffice.com/transfers";
 
   public static CrawJobResult buildTask(TransferParam param) {
@@ -29,7 +31,7 @@ public class TransferTask {
     result.getHttpConf().getRequestParams().put("transfer_to", param.getTransferTo());
     result.getHttpConf().getRequestParams()
         .put("partition_transfer_partition[user_wallet_id]", param.getUserWalletId());
-    result.getHttpConf().getRequestParams().put("partition_transfer_partition[amount]", param.getAmount());
+    result.getHttpConf().getRequestParams().put("partition_transfer_partition[amount]", "1");
 
     result.getHttpConf().getRequestParams()
         .put("partition_transfer_partition[token]", param.getToken());
@@ -51,8 +53,10 @@ public class TransferTask {
     try {
       HttpResponse response = HttpUtils
           .doPostJson(result.getCrawlMeta(), result.getHttpConf().buildCookie());
+      logger.info("转账成功responseode:"+response.getStatusLine().getStatusCode());
       return response.getStatusLine().getStatusCode();
     } catch (Exception e) {
+      logger.error("转账请求异常:"+e.getMessage());
       return 500;
     }
   }

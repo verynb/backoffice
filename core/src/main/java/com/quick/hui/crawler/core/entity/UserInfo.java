@@ -4,7 +4,7 @@ package com.quick.hui.crawler.core.entity;
  * Created by yuanj on 2017/11/28.
  */
 
-public class UserInfo {
+public class  UserInfo {
   private String user_id;
   private String name;
   private Boolean response;

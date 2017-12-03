@@ -16,12 +16,14 @@ import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by yuanj on 2017/11/27.
  */
 public class InitTask {
-
+  private static Logger logger = LoggerFactory.getLogger(InitTask.class);
   private static String URL = "https://www.bitbackoffice.com";
 
   private static String RECAPTCHA_URL = URL + "/_Incapsula_Resource?SWCGHOEL=v2";

@@ -28,4 +28,12 @@ public class TransferWallet {
   public void setAmount(Double amount) {
     this.amount = amount;
   }
+
+  @Override
+  public String toString() {
+    return "TransferWallet{" +
+        "walletId='" + walletId + '\'' +
+        ", amount=" + amount +
+        '}';
+  }
 }

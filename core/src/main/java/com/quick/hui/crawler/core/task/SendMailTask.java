@@ -11,12 +11,14 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by yuanj on 2017/11/27.
  */
 public class SendMailTask {
-
+  private static Logger logger = LoggerFactory.getLogger(SendMailTask.class);
   private static String URL = "https://www.bitbackoffice.com/tokens";
 
   public static CrawJobResult buildTask(String token,String userId) {
@@ -39,11 +41,14 @@ public class SendMailTask {
           .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
       String returnStr=EntityUtils.toString(response.getEntity());
       if(returnStr.contains("number_exceeded")){
+        logger.info("线程"+Thread.currentThread().getName()+"拒绝发送邮件，有未使用的邮件");
         return new SendMailResult("success","number_exceeded");
       }else {
+        logger.info("线程"+Thread.currentThread().getName()+"发送邮件成功");
         return GsonUtil.jsonToObject(returnStr, SendMailResult.class);
       }
     } catch (Exception e) {
+      logger.info("线程"+Thread.currentThread().getName()+"发送邮件请求异常"+e.getMessage());
       return null;
     }
   }
