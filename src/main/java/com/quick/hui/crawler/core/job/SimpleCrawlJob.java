@@ -5,6 +5,7 @@ import com.quick.hui.crawler.core.entity.LoginAuthTokenData;
 import com.quick.hui.crawler.core.entity.SendMailResult;
 import com.quick.hui.crawler.core.entity.TransferPageData;
 import com.quick.hui.crawler.core.entity.TransferParam;
+import com.quick.hui.crawler.core.entity.TransferResult;
 import com.quick.hui.crawler.core.entity.TransferUserInfo;
 import com.quick.hui.crawler.core.entity.TransferWallet;
 import com.quick.hui.crawler.core.entity.UserInfo;
@@ -73,7 +74,6 @@ public class SimpleCrawlJob extends AbstractJob {
       if (Objects.isNull(cookies)) {
         logger.info("请初始化cookies");
         return;
-//        throw new RuntimeException("请初始化cookies");
       }
       List<LocalCookie> localCookies = Lists.newArrayList();
       for (Map.Entry<String, String> entry : cookies.entrySet()) {
@@ -85,8 +85,6 @@ public class SimpleCrawlJob extends AbstractJob {
     if (InitTask.executeSucess() != 200) {
       logger.info("线程" + Thread.currentThread().getName() + "cookies初始化失败，请输入有效cookie");
       return;
-      /*throw new RuntimeException(
-          "线程" + Thread.currentThread().getName() + "cookies初始化失败，请输入有效cookie");*/
     } else {
       logger.info("线程" + Thread.currentThread().getName() + "初始化cookie成功");
     }
@@ -152,7 +150,7 @@ public class SimpleCrawlJob extends AbstractJob {
       TransferWallet wallet = filterList.get(0);
       Thread.sleep(500);
       UserInfo receiverInfo = GetReceiverTask.execute(transferTo);
-      if (!Objects.isNull(receiverInfo)) {
+      if (!Objects.isNull(receiverInfo) && receiverInfo.getResponse()) {
         Thread.sleep(500);
         logger.info(
             "线程" + Thread.currentThread().getName() + "获取转出账户信息成功===>" + receiverInfo.toString());
@@ -165,30 +163,47 @@ public class SimpleCrawlJob extends AbstractJob {
               .filterMails(email, mailPassword);
           logger
               .info("线程" + Thread.currentThread().getName() + "邮件解析成功====>" + tokenData.toString());
-          TransferParam param = new TransferParam(getTransferPage.getAuthToken(),
-              transferTo,
-              wallet.getWalletId(),
-              wallet.getAmount(),
-              tokenData.get(0).getToken(),
-              getTransferPage.getTransferUserId(),
-              receiverInfo.getUser_id()
-          );
-          logger.info(
-              "线程" + Thread.currentThread().getName() + "线程" + Thread.currentThread().getName()
-                  + "开始转账");
-          logger.info("线程" + Thread.currentThread().getName() + "转账参数======>" + param.toString());
-          int transferCode = TransferTask.execute(param);
-          if (transferCode == 200) {
-            transferLogger.info(
-                "账户：" + this.userInfo.getUserName() + "转出：" + wallet.getAmount() + " 到账户："
-                    + transferTo);
-            logger.info("线程" + Thread.currentThread().getName() + "转账成功，休眠500毫秒执行下一轮转账");
-            Thread.sleep(500);
-            logger.info("线程" + Thread.currentThread().getName() + "下一轮转账开始");
-            transfer(email, mailPassword, transferTo);
-          }
+
+          transferByToken(email,mailPassword,getTransferPage,wallet,transferTo,receiverInfo,tokenData);
         }
       }
+    }
+  }
+
+  private void transferByToken(String email,
+      String mailPassword,
+      TransferPageData getTransferPage,
+      TransferWallet wallet,
+      String transferTo,
+      UserInfo receiverInfo,
+      List<MailTokenData> tokenData) throws InterruptedException {
+    TransferParam param = new TransferParam(getTransferPage.getAuthToken(),
+        transferTo,
+        wallet.getWalletId(),
+        wallet.getAmount(),
+        tokenData.get(0).getToken(),
+        getTransferPage.getTransferUserId(),
+        receiverInfo.getUser_id()
+    );
+    logger.info(
+        "线程" + Thread.currentThread().getName() + "线程" + Thread.currentThread().getName()
+            + "开始转账");
+    logger.info("线程" + Thread.currentThread().getName() + "转账参数======>" + param.toString());
+    TransferResult transferCode = TransferTask.execute(param);
+    if (transferCode.getError().equals("invalid_token")) {
+      tokenData.remove(0);
+      Thread.sleep(1000L);
+      logger.info("线程" + Thread.currentThread().getName() + "重新获取token");
+      transferByToken(email, mailPassword, getTransferPage, wallet, transferTo, receiverInfo, tokenData);
+    }
+    if (transferCode.getStatus().equals("success")) {
+      transferLogger.info(
+          "账户：" + this.userInfo.getUserName() + "转出：" + wallet.getAmount() + " 到账户："
+              + transferTo);
+      logger.info("线程" + Thread.currentThread().getName() + "转账成功，休眠500毫秒执行下一轮转账");
+      Thread.sleep(500);
+      logger.info("线程" + Thread.currentThread().getName() + "下一轮转账开始");
+      transfer(email, mailPassword, transferTo);
     }
   }
 }

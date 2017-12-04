@@ -25,7 +25,7 @@ public class ScheduledThread {
   public static void main(String[] args) {
     if (args.length == 0) {
       logger.info("请配置cookie文件与userData文件的正确路径");
-      logger.info("eg:cookie=F:\\xxx\\account.csv userData=F:\\xxx\\cookies.csv");
+      logger.info("eg:cookie=F:\\xxx\\cookies.properties userData=F:\\xxx\\account.csv");
       return;
     } else {
       List<String> argList = Arrays.asList(args);
@@ -45,7 +45,7 @@ public class ScheduledThread {
       logger.info("开始加载用户数据");
       List<TransferUserInfo> userInfos = LoadData.loadUserInfoData(userDataPath.get().split("=")[1]);
       logger.info("开始加载cookie数据");
-      Map<String, String> cookie = LoadData.loadCookies(cookiePath.get().split("=")[1]);
+      Map<String, String> cookie = LoadProperties.loadCookieProperties(cookiePath.get().split("=")[1]);
 //初始化5个线程，多个任务，每个任务延迟1s,每隔1个小时执行一次
       ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(50);
       userInfos.forEach(u -> {
