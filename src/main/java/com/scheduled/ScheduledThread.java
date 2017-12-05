@@ -23,7 +23,7 @@ public class ScheduledThread {
   private static Logger logger = LoggerFactory.getLogger(SimpleCrawlJob.class);
 
   public static void main(String[] args) {
-    if (args.length == 0) {
+   /* if (args.length == 0) {
       logger.info("请配置cookie文件与userData文件的正确路径");
       logger.info("eg:cookie=F:\\xxx\\cookies.properties userData=F:\\xxx\\account.csv");
       return;
@@ -40,12 +40,12 @@ public class ScheduledThread {
       if (!userDataPath.isPresent()) {
         logger.info("获取userData路径失败");
         return;
-      }
+      }*/
       logger.info("应用启动。。。");
       logger.info("开始加载用户数据");
-      List<TransferUserInfo> userInfos = LoadData.loadUserInfoData(userDataPath.get().split("=")[1]);
+      List<TransferUserInfo> userInfos = LoadData.loadUserInfoData("./account.csv");
       logger.info("开始加载cookie数据");
-      Map<String, String> cookie = LoadProperties.loadCookieProperties(cookiePath.get().split("=")[1]);
+      Map<String, String> cookie = LoadProperties.loadCookieProperties("./cookies.properties");
 //初始化5个线程，多个任务，每个任务延迟1s,每隔1个小时执行一次
       ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(50);
       userInfos.forEach(u -> {
@@ -55,5 +55,5 @@ public class ScheduledThread {
             1, 2, TimeUnit.SECONDS);
       });
     }
-  }
+//  }
 }

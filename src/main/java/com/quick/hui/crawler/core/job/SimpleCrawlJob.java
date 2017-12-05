@@ -162,7 +162,7 @@ public class SimpleCrawlJob extends AbstractJob {
           List<MailTokenData> tokenData = MailToken
               .filterMails(email, mailPassword);
           logger
-              .info("线程" + Thread.currentThread().getName() + "邮件解析成功====>" + tokenData.toString());
+              .info("线程" + Thread.currentThread().getName() + "邮件解析成功");
 
           transferByToken(email,mailPassword,getTransferPage,wallet,transferTo,receiverInfo,tokenData);
         }
