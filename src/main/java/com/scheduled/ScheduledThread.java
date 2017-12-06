@@ -10,6 +10,7 @@ import com.quick.hui.crawler.core.loadUserData.LoadProperties;
 import com.util.RandomUtil;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -40,27 +41,38 @@ public class ScheduledThread {
     Map<String, String> cookie = LoadProperties.loadCookieProperties("./cookies.properties");
     ThreadConfig config = LoadProperties.loadConfigProperties("./config.properties");
     ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(config.getThreadPoolSize());
-    userInfos.forEach(u -> {
+//    userInfos.forEach(u -> {
+    for(int i=0;i<userInfos.size();i++){
+
+      scheduledThreadPool.schedule(new SimpleCrawlJob(userInfos.get(i),
+              config, cookie),
+          1, TimeUnit.SECONDS);
       try {
         int space = RandomUtil.ranNum(config.getThreadspaceTime() * 1000);
         logger.info("任务时间间隔:" + space + "ms");
         Thread.sleep(space);
       } catch (InterruptedException e) {
       }
-      scheduledThreadPool.schedule(new SimpleCrawlJob(u,
-              config, cookie),
-          1, TimeUnit.SECONDS);
-    });
+    }
     scheduledThreadPool.shutdown();
 
     while (true) {
       if (scheduledThreadPool.isTerminated()) {
-        System.out.println("所有的子线程都结束了！");
+//        System.out.println("所有的子线程都结束了！");
         break;
       }
-//      Thread.sleep(1000);
     }
-    System.out.println("==================end====================" + threadResults.toString());
+    userInfos.stream()
+        .forEach(user -> {
 
+          Optional<ThreadResult> tr = threadResults.stream().filter(t -> t.getRow() == user.getRow())
+              .findFirst();
+          if (tr.isPresent()) {
+            user.setNum(tr.get().getSuccess() ? 0 : (user.getNum() == null ? 0 : user.getNum()) + 1);
+          } else {
+            user.setNum((user.getNum() == null ? 0 : user.getNum()) + 1);
+          }
+        });
+    LoadData.writeResult(userInfos);
   }
 }

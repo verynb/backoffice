@@ -6,6 +6,7 @@ import com.quick.hui.crawler.core.entity.TransferUserInfo;
 import de.siegmar.fastcsv.reader.CsvContainer;
 import de.siegmar.fastcsv.reader.CsvReader;
 import de.siegmar.fastcsv.reader.CsvRow;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
@@ -17,7 +18,9 @@ import org.slf4j.LoggerFactory;
 
 @Slf4j
 public class LoadData {
+
   private static Logger logger = LoggerFactory.getLogger(LoadData.class);
+
   public static List<TransferUserInfo> loadUserInfoData(String filePath) {
     CsvReader csvReader = new CsvReader();
     csvReader.setContainsHeader(true);
@@ -25,9 +28,9 @@ public class LoadData {
     List<TransferUserInfo> userInfos = Lists.newArrayList();
     try {
       csv = csvReader.read(Paths.get(filePath), StandardCharsets.UTF_8);
-      if(csv==null){
+      if (csv == null) {
       }
-      int i=0;
+      int i = 0;
       for (CsvRow row : csv.getRows()) {
         i++;
         TransferUserInfo userInfo = new TransferUserInfo(
@@ -36,13 +39,14 @@ public class LoadData {
             row.getField("tpassword"),
             row.getField("tmail"),
             row.getField("tmailpassword"),
-            row.getField("ruser"));
+            row.getField("ruser"),
+            row.getField("flag") == null ? null : Integer.valueOf(row.getField("flag").toString()));
         if (userInfo.filterUserInfo()) {
           userInfos.add(userInfo);
         }
       }
     } catch (IOException e) {
-      logger.info("加载用户数据失败"+e.getMessage());
+      logger.info("加载用户数据失败" + e.getMessage());
       throw new RuntimeException();
     }
     logger.info("加载用户数据成功");
@@ -50,24 +54,26 @@ public class LoadData {
   }
 
 
-  public static Map loadCookies(String filePath) {
-    CsvReader csvReader = new CsvReader();
-    csvReader.setContainsHeader(true);
-    CsvContainer csv = null;
-    Map<String,String> cookieMap = Maps.newHashMap();
+  public static void writeResult(List<TransferUserInfo> userInfos) {
     try {
-      csv = csvReader.read(Paths.get(filePath), StandardCharsets.UTF_8);
-      if(csv==null){
-        logger.info("加载cookie数据失败");
-        throw new RuntimeException();
+      FileWriter fw = new FileWriter("./account.csv");
+      String header = "tuser,tpassword,tmail,tmailpassword,ruser,flag\r\n";
+      fw.write(header);
+      for (int i = 0; i < userInfos.size(); i++) {
+        TransferUserInfo info=userInfos.get(0);
+        StringBuffer str = new StringBuffer();
+        str.append(info.getUserName().toString()+","
+            +info.getPassword().toString()+","
+            +info.getEmail().toString()+","
+            +info.getMailPassword().toString()+","
+            +info.getTransferTo().toString()+","
+            +info.getNum().toString()+"\r\n");
+        fw.write(str.toString());
+        fw.flush();
       }
-      for (CsvRow row : csv.getRows()) {
-        cookieMap.put(row.getField("key"), row.getField("value"));
-      }
+      fw.close();
     } catch (IOException e) {
-      logger.error("加载cookie数据失败"+e.getMessage());
+      e.printStackTrace();
     }
-    logger.info("加载cookie数据成功");
-    return cookieMap;
   }
 }
