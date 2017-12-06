@@ -3,6 +3,7 @@ package com.quick.hui.crawler.core.job;
 import com.google.common.collect.Lists;
 import com.quick.hui.crawler.core.entity.LoginAuthTokenData;
 import com.quick.hui.crawler.core.entity.SendMailResult;
+import com.quick.hui.crawler.core.entity.ThreadConfig;
 import com.quick.hui.crawler.core.entity.ThreadResult;
 import com.quick.hui.crawler.core.entity.TransferPageData;
 import com.quick.hui.crawler.core.entity.TransferParam;
@@ -23,6 +24,8 @@ import com.quick.hui.crawler.core.task.SendMailTask;
 import com.quick.hui.crawler.core.task.TransferPageTask;
 import com.quick.hui.crawler.core.task.TransferTask;
 import com.scheduled.ScheduledThread;
+import com.util.RandomUtil;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -44,22 +47,19 @@ import org.slf4j.LoggerFactory;
 public class SimpleCrawlJob extends AbstractJob {
 
   private static Logger logger = LoggerFactory.getLogger(SimpleCrawlJob.class);
-  private static Logger transferLogger = LoggerFactory.getLogger("transferLogger");
+  private static Logger transferSuccessLogger = LoggerFactory.getLogger("transferSuccessLogger");
+  private static Logger transferFailueLogger = LoggerFactory.getLogger("transferFailueLogger");
   private TransferUserInfo userInfo;
   //发邮件与收邮件时间间隔，默认10s
-  private Long mailSendReceiveSpace;
-  //每个请求间隔时间，默认未2s
-  private Long requestSpace;
+  private ThreadConfig config;
 
   private Map<String, String> cookies;
 
   public SimpleCrawlJob(TransferUserInfo userInfo,
-      Long mailSendReceiveSpace,
-      Long requestSpace,
+      ThreadConfig config,
       Map<String, String> cookies) {
     this.userInfo = userInfo;
-    this.mailSendReceiveSpace = mailSendReceiveSpace == null ? 10000L : mailSendReceiveSpace;
-    this.requestSpace = requestSpace == null ? 2000L : requestSpace;
+    this.config = config;
     this.cookies = cookies;
   }
 
@@ -87,6 +87,7 @@ public class SimpleCrawlJob extends AbstractJob {
     if (InitTask.executeSucess() != 200) {
       logger.info("线程" + Thread.currentThread().getName() + "cookies初始化失败，请输入有效cookie");
       ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), false));
+      transferFailueLogger.info("转账失败账户:"+userInfo.getUserName()+"原因:cookie初始化失败");
       throw new RuntimeException("cookies初始化失败，请输入有效cookie");
     } else {
       logger.info("线程" + Thread.currentThread().getName() + "初始化cookie成功");
@@ -116,29 +117,32 @@ public class SimpleCrawlJob extends AbstractJob {
     if (tokenData.getCode() == 200) {
       //登录
       logger.info("线程" + Thread.currentThread().getName() + "开始登录");
-      Thread.sleep(500);
+      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime())*1000);
       int loginCode = LoginTask.execute(tokenData.getResult(),
           this.userInfo.getUserName(), this.userInfo.getPassword());
       //登录成功
       if (loginCode == 302) {
         //登录重定向后的页面
-        Thread.sleep(500);
+        Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime())*1000);
         logger.info("线程" + Thread.currentThread().getName() + "开始抓取登录成功后跳转");
         int loginSuccessCode = LoginSuccessTask.execute();
         if (loginSuccessCode == 200) {
-          Thread.sleep(500);
+          Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime())*1000);
           transfer(this.userInfo.getEmail(), this.userInfo.getMailPassword(),
               this.userInfo.getTransferTo());
         } else {
           ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), false));
-          throw new RuntimeException("开始抓取登录成功后跳转也失败");
+          transferFailueLogger.info("转账失败账户:"+userInfo.getUserName()+"原因:抓取登录成功后跳转页失败");
+          throw new RuntimeException("开始抓取登录成功后跳转页失败");
         }
       } else {
         ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), false));
+        transferFailueLogger.info("转账失败账户:"+userInfo.getUserName()+"原因:登录失败");
         throw new RuntimeException("登录失败");
       }
     } else {
       ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), false));
+      transferFailueLogger.info("转账失败账户:"+userInfo.getUserName()+"原因:抓取登录页面失败");
       throw new RuntimeException("抓取登录页面失败");
     }
   }
@@ -160,17 +164,18 @@ public class SimpleCrawlJob extends AbstractJob {
         return;
       }
       TransferWallet wallet = filterList.get(0);
-      Thread.sleep(500);
+      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime())*1000);
       UserInfo receiverInfo = GetReceiverTask.execute(transferTo);
       if (!Objects.isNull(receiverInfo) && receiverInfo.getResponse()) {
-        Thread.sleep(500);
+        Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime())*1000);
         logger.info(
             "线程" + Thread.currentThread().getName() + "获取转出账户信息成功===>" + receiverInfo.toString());
         SendMailResult mailResult =
             SendMailTask
                 .execute(getTransferPage.getAuthToken(), getTransferPage.getTransferUserId());
         if (!Objects.isNull(mailResult)) {//邮件发送成功的情况
-          Thread.sleep(this.mailSendReceiveSpace);
+          long mailStartTime=System.currentTimeMillis();
+          Thread.sleep(RandomUtil.ranNum(config.getMailSpaceTime())*1000);
           List<MailTokenData> tokenData = MailToken
               .filterMails(email, mailPassword);
           logger
@@ -179,14 +184,17 @@ public class SimpleCrawlJob extends AbstractJob {
           transferByToken(email, mailPassword, getTransferPage, wallet, transferTo, receiverInfo, tokenData);
         } else {
           ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), false));
-          throw new RuntimeException("获取邮件信息成功");
+          transferFailueLogger.info("转账失败账户:"+userInfo.getUserName()+"原因:获取邮件信息失败");
+          throw new RuntimeException("获取邮件信息失败");
         }
       } else {
         ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), false));
+        transferFailueLogger.info("转账失败账户:"+userInfo.getUserName()+"原因:获取转出人信息失败");
         throw new RuntimeException("获取转出人信息失败");
       }
     } else {
       ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), false));
+      transferFailueLogger.info("转账失败账户:"+userInfo.getUserName()+"原因:抓取转账页面数据失败");
       throw new RuntimeException("抓取转账页面数据失败");
     }
   }
@@ -213,21 +221,22 @@ public class SimpleCrawlJob extends AbstractJob {
     TransferResult transferCode = TransferTask.execute(param);
     if (transferCode.getError().equals("invalid_token")) {
       tokenData.remove(0);
-      Thread.sleep(1000L);
+      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime())*1000);
       logger.info("线程" + Thread.currentThread().getName() + "重新获取token");
       transferByToken(email, mailPassword, getTransferPage, wallet, transferTo, receiverInfo, tokenData);
     }
     if (transferCode.getStatus().equals("success")) {
-      transferLogger.info(
+      transferSuccessLogger.info(
           "账户：" + this.userInfo.getUserName() + "转出：" + wallet.getAmount() + " 到账户："
               + transferTo);
       logger.info("线程" + Thread.currentThread().getName() + "转账成功，休眠500毫秒执行下一轮转账");
       ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), true));
-      Thread.sleep(500);
+      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime())*1000);
       logger.info("线程" + Thread.currentThread().getName() + "下一轮转账开始");
       transfer(email, mailPassword, transferTo);
     } else {
       ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), false));
+      transferFailueLogger.info("转账失败账户:"+userInfo.getUserName()+"原因:服务器错误");
       throw new RuntimeException("转账失败");
     }
   }

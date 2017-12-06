@@ -1,11 +1,13 @@
 package com.scheduled;
 
 import com.google.common.collect.Lists;
+import com.quick.hui.crawler.core.entity.ThreadConfig;
 import com.quick.hui.crawler.core.entity.ThreadResult;
 import com.quick.hui.crawler.core.entity.TransferUserInfo;
 import com.quick.hui.crawler.core.job.SimpleCrawlJob;
 import com.quick.hui.crawler.core.loadUserData.LoadData;
 import com.quick.hui.crawler.core.loadUserData.LoadProperties;
+import com.util.RandomUtil;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -36,24 +38,29 @@ public class ScheduledThread {
     List<TransferUserInfo> userInfos = LoadData.loadUserInfoData("./account.csv");
     logger.info("开始加载cookie数据");
     Map<String, String> cookie = LoadProperties.loadCookieProperties("./cookies.properties");
-//初始化5个线程，多个任务，每个任务延迟1s,每隔1个小时执行一次
-    ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(50);
+    ThreadConfig config = LoadProperties.loadConfigProperties("./config.properties");
+    ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(config.getThreadPoolSize());
     userInfos.forEach(u -> {
+      try {
+        int space = RandomUtil.ranNum(config.getThreadspaceTime() * 1000);
+        logger.info("任务时间间隔:" + space + "ms");
+        Thread.sleep(space);
+      } catch (InterruptedException e) {
+      }
       scheduledThreadPool.schedule(new SimpleCrawlJob(u,
-              null,
-              null, cookie),
+              config, cookie),
           1, TimeUnit.SECONDS);
     });
     scheduledThreadPool.shutdown();
 
-    while(true){
-      if(scheduledThreadPool.isTerminated()){
+    while (true) {
+      if (scheduledThreadPool.isTerminated()) {
         System.out.println("所有的子线程都结束了！");
         break;
       }
 //      Thread.sleep(1000);
     }
-    System.out.println("==================end===================="+threadResults.toString());
+    System.out.println("==================end====================" + threadResults.toString());
 
   }
 }

@@ -1,6 +1,7 @@
 package com.quick.hui.crawler.core.loadUserData;
 
 import com.google.common.collect.Maps;
+import com.quick.hui.crawler.core.entity.ThreadConfig;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,6 +18,38 @@ import org.slf4j.LoggerFactory;
 public class LoadProperties {
 
   private static Logger logger = LoggerFactory.getLogger(LoadProperties.class);
+
+
+  public static ThreadConfig loadConfigProperties(String path) {
+    InputStream is = null;
+    Properties p = new Properties();
+    Map<String, Integer> configMap = Maps.newHashMap();
+    try {
+      is = new FileInputStream(new File(path));
+      if (Objects.isNull(is)) {
+        logger.info("加载配置文件出错");
+        throw new RuntimeException();
+      }
+      p.load(is);
+      Integer mailSpaceTime = Integer.valueOf(p.get("mail.space.time").toString());
+      Integer requestSpaceTime = Integer.valueOf(p.get("request.space.time").toString());
+      Integer mailReceiveErrorTimes = Integer.valueOf(p.get("mail.receive.error.times").toString());
+      Integer transferErrorTimes = Integer.valueOf(p.get("transfer.error.times").toString());
+      Integer threadSpaceTime = Integer.valueOf(p.get("thread.space.time").toString());
+      Integer threadPoolSize = Integer.valueOf(p.get("thread.pool.size").toString());
+      return new ThreadConfig(mailSpaceTime, requestSpaceTime, mailReceiveErrorTimes, transferErrorTimes,
+          threadSpaceTime,threadPoolSize);
+    } catch (IOException e) {
+
+    } finally {
+      try {
+        is.close();
+      } catch (IOException e) {
+      }
+    }
+    logger.info("加载配置文件成功");
+    return null;
+  }
 
   public static Map loadCookieProperties(String path) {
     InputStream is = null;
