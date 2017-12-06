@@ -3,6 +3,7 @@ package com.quick.hui.crawler.core.job;
 import com.google.common.collect.Lists;
 import com.quick.hui.crawler.core.entity.LoginAuthTokenData;
 import com.quick.hui.crawler.core.entity.SendMailResult;
+import com.quick.hui.crawler.core.entity.ThreadResult;
 import com.quick.hui.crawler.core.entity.TransferPageData;
 import com.quick.hui.crawler.core.entity.TransferParam;
 import com.quick.hui.crawler.core.entity.TransferResult;
@@ -21,6 +22,7 @@ import com.quick.hui.crawler.core.task.LoginTask;
 import com.quick.hui.crawler.core.task.SendMailTask;
 import com.quick.hui.crawler.core.task.TransferPageTask;
 import com.quick.hui.crawler.core.task.TransferTask;
+import com.scheduled.ScheduledThread;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -84,7 +86,8 @@ public class SimpleCrawlJob extends AbstractJob {
     }
     if (InitTask.executeSucess() != 200) {
       logger.info("线程" + Thread.currentThread().getName() + "cookies初始化失败，请输入有效cookie");
-      return;
+      ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), false));
+      throw new RuntimeException("cookies初始化失败，请输入有效cookie");
     } else {
       logger.info("线程" + Thread.currentThread().getName() + "初始化cookie成功");
     }
@@ -126,8 +129,17 @@ public class SimpleCrawlJob extends AbstractJob {
           Thread.sleep(500);
           transfer(this.userInfo.getEmail(), this.userInfo.getMailPassword(),
               this.userInfo.getTransferTo());
+        } else {
+          ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), false));
+          throw new RuntimeException("开始抓取登录成功后跳转也失败");
         }
+      } else {
+        ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), false));
+        throw new RuntimeException("登录失败");
       }
+    } else {
+      ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), false));
+      throw new RuntimeException("抓取登录页面失败");
     }
   }
 
@@ -164,9 +176,18 @@ public class SimpleCrawlJob extends AbstractJob {
           logger
               .info("线程" + Thread.currentThread().getName() + "邮件解析成功");
 
-          transferByToken(email,mailPassword,getTransferPage,wallet,transferTo,receiverInfo,tokenData);
+          transferByToken(email, mailPassword, getTransferPage, wallet, transferTo, receiverInfo, tokenData);
+        } else {
+          ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), false));
+          throw new RuntimeException("获取邮件信息成功");
         }
+      } else {
+        ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), false));
+        throw new RuntimeException("获取转出人信息失败");
       }
+    } else {
+      ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), false));
+      throw new RuntimeException("抓取转账页面数据失败");
     }
   }
 
@@ -201,9 +222,18 @@ public class SimpleCrawlJob extends AbstractJob {
           "账户：" + this.userInfo.getUserName() + "转出：" + wallet.getAmount() + " 到账户："
               + transferTo);
       logger.info("线程" + Thread.currentThread().getName() + "转账成功，休眠500毫秒执行下一轮转账");
+      ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), true));
       Thread.sleep(500);
       logger.info("线程" + Thread.currentThread().getName() + "下一轮转账开始");
       transfer(email, mailPassword, transferTo);
+    } else {
+      ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), false));
+      throw new RuntimeException("转账失败");
     }
+  }
+
+  @Override
+  public void afterRun() {
+    Session.remove();
   }
 }

@@ -8,14 +8,16 @@ import org.apache.commons.lang3.StringUtils;
 
 public class TransferUserInfo {
 
+  private int row;
   private String userName;
   private String password;
   private String email;
   private String mailPassword;
   private String transferTo;
 
-  public TransferUserInfo(String userName, String password, String email, String mailPassword,
+  public TransferUserInfo(int row, String userName, String password, String email, String mailPassword,
       String transferTo) {
+    this.row = row;
     this.userName = userName;
     this.password = password;
     this.email = email;
@@ -24,6 +26,14 @@ public class TransferUserInfo {
   }
 
   public TransferUserInfo() {
+  }
+
+  public int getRow() {
+    return row;
+  }
+
+  public void setRow(int row) {
+    this.row = row;
   }
 
   public String getUserName() {

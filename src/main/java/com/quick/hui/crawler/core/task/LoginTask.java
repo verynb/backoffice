@@ -43,6 +43,11 @@ public class LoginTask {
     try {
       HttpResponse response = HttpUtils
           .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
+      if(response.getStatusLine().getStatusCode()!=302){
+        //用户名密码错误
+        logger.info("线程"+Thread.currentThread().getName()+"登录失败responseCode:" + response.getStatusLine().getStatusCode());
+        return 400;
+      }
       logger.info("线程"+Thread.currentThread().getName()+"登录成功responseCode:" + response.getStatusLine().getStatusCode());
       return response.getStatusLine().getStatusCode();
     } catch (Exception e) {

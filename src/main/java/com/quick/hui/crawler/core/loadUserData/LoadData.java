@@ -27,8 +27,11 @@ public class LoadData {
       csv = csvReader.read(Paths.get(filePath), StandardCharsets.UTF_8);
       if(csv==null){
       }
+      int i=0;
       for (CsvRow row : csv.getRows()) {
+        i++;
         TransferUserInfo userInfo = new TransferUserInfo(
+            i,
             row.getField("tuser"),
             row.getField("tpassword"),
             row.getField("tmail"),

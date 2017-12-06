@@ -14,14 +14,11 @@ public abstract class AbstractJob implements IJob {
 
     @Override
     public void run() {
-        this.beforeRun();
         try {
+            this.beforeRun();
             this.doFetchPage();
         } catch (Exception e) {
-            e.printStackTrace();
         }
-
-
         this.afterRun();
     }
 

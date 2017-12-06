@@ -57,7 +57,7 @@ public class TransferTask {
           .doPostJson(result.getCrawlMeta(), result.getHttpConf().buildCookie());
       String returnStr = EntityUtils.toString(response.getEntity());
       if (returnStr.contains("invalid_token")) {
-        logger.info("转账成功token:" + param.getToken() + "不正确");
+        logger.info("转账token:" + param.getToken() + "不正确");
         return new TransferResult("error", "invalid_token");
       } else if(returnStr.contains("success")){
         logger.info("转账成功");
