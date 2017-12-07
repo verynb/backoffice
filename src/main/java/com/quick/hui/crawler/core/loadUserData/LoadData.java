@@ -60,7 +60,7 @@ public class LoadData {
       String header = "tuser,tpassword,tmail,tmailpassword,ruser,flag\r\n";
       fw.write(header);
       for (int i = 0; i < userInfos.size(); i++) {
-        TransferUserInfo info=userInfos.get(0);
+        TransferUserInfo info=userInfos.get(i);
         StringBuffer str = new StringBuffer();
         str.append(info.getUserName().toString()+","
             +info.getPassword().toString()+","

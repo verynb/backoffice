@@ -12,6 +12,7 @@ import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.internet.MimeMessage;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -33,6 +34,7 @@ public class MailToken {
     store.connect(mail, password);
     return store;
   }
+
 
   public static List<MailTokenData> filterMails(String mail, String password) {
     Store store = null;
@@ -66,6 +68,18 @@ public class MailToken {
 
       }
       return dataList;
+    }
+  }
+
+  public static boolean isreceived(List<MailTokenData> datas, long startTime) {
+    if (CollectionUtils.isEmpty(datas)) {
+      return false;
+    }
+    MailTokenData data = datas.get(0);
+    if (data.getDate() >= startTime) {
+      return true;
+    } else {
+      return false;
     }
   }
 }

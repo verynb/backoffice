@@ -11,9 +11,11 @@ import com.util.RandomUtil;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,5 +76,14 @@ public class ScheduledThread {
           }
         });
     LoadData.writeResult(userInfos);
+    long successCount=userInfos.stream().filter(u ->u.getNum()==0).count();
+    long failueCount=userInfos.stream().filter(u ->u.getNum()!=0).count();
+    System.out.println("所有任务执行完毕，成功："+successCount+",失败："+failueCount);
+    System.out.println("输入任意结束");
+    Scanner scan = new Scanner(System.in);
+    String read = scan.nextLine();
+    while (StringUtils.isBlank(read)){
+
+    }
   }
 }
