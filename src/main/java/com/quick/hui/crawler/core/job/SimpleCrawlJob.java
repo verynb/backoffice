@@ -24,6 +24,7 @@ import com.quick.hui.crawler.core.task.SendMailTask;
 import com.quick.hui.crawler.core.task.TransferPageTask;
 import com.quick.hui.crawler.core.task.TransferTask;
 import com.scheduled.ScheduledThread;
+import com.util.GetNetworkTime;
 import com.util.RandomUtil;
 import java.util.Date;
 import java.util.List;
@@ -175,7 +176,7 @@ public class SimpleCrawlJob extends AbstractJob {
             SendMailTask
                 .execute(getTransferPage.getAuthToken(), getTransferPage.getTransferUserId());
         if (!Objects.isNull(mailResult)) {//邮件发送成功的情况
-          long mailStartTime = System.currentTimeMillis();
+          long mailStartTime = GetNetworkTime.getNetworkDatetime();
           long mailSpace = RandomUtil.ranNum(config.getMailSpaceTime()) * 1000;
           logger.info(
               "线程" + Thread.currentThread().getName() + "休眠" + mailSpace+"ms后读取邮件");
@@ -220,21 +221,19 @@ public class SimpleCrawlJob extends AbstractJob {
   private List<MailTokenData> tryReceiveMail(String email, String mailPassword, long mailStartTime, long mailSpace,
       int tryTimes)
       throws InterruptedException {
-    List<MailTokenData> tokenData = MailToken
-        .filterMails(email, mailPassword);
-    if (!MailToken.isreceived(tokenData, mailStartTime)) {
-      long tryMailSpace = RandomUtil.ranNum(config.getMailSpaceTime()) * 1000;
-      logger
-          .info("线程" + Thread.currentThread().getName() + "获取邮件失败,等待" + tryMailSpace + "ms重新获取");
-      Thread.sleep(tryMailSpace);
-      tryTimes--;
-      logger
-          .info("线程" + Thread.currentThread().getName() + "重新获取邮件开始剩余重试次数" + tryTimes);
-      if (tryTimes > 0) {
-        tryReceiveMail(email, mailPassword, mailStartTime, mailSpace + tryMailSpace, tryTimes);
+    for(int i=1;i<=tryTimes;i++){
+      List<MailTokenData> tokenData = MailToken
+          .filterMails(email, mailPassword);
+      if (!MailToken.isreceived(tokenData, mailStartTime)) {
+          long tryMailSpace = RandomUtil.ranNum(config.getMailSpaceTime()) * 1000;
+          logger
+              .info("线程" + Thread.currentThread().getName() + "获取邮件失败,等待" + tryMailSpace + "ms重新获取");
+          Thread.sleep(tryMailSpace);
+          logger
+              .info("线程" + Thread.currentThread().getName() + "重新获取邮件开始剩余重试次数" + (tryTimes-i));
+      } else {
+        return tokenData;
       }
-    } else {
-      return tokenData;
     }
     return null;
   }

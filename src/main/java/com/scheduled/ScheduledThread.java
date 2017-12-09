@@ -7,6 +7,7 @@ import com.quick.hui.crawler.core.entity.TransferUserInfo;
 import com.quick.hui.crawler.core.job.SimpleCrawlJob;
 import com.quick.hui.crawler.core.loadUserData.LoadData;
 import com.quick.hui.crawler.core.loadUserData.LoadProperties;
+import com.util.IdentityCheck;
 import com.util.RandomUtil;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,7 @@ public class ScheduledThread {
   }
 
   public static void main(String[] args) {
+    IdentityCheck.checkIdentity();
     logger.info("应用启动。。。");
     logger.info("开始加载用户数据");
     List<TransferUserInfo> userInfos = LoadData.loadUserInfoData("./account.csv");
