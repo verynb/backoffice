@@ -43,7 +43,7 @@ public class IdentityCheck {
         System.exit(0);
       }
     } else {
-      System.out.println("2017-12-9 23:59:59后需要身份验证");
+      System.out.println("2017-12-17 23:59:59后需要身份验证");
       return;
     }
   }
