@@ -44,6 +44,11 @@ public class ReceiveEmail {
     return str.substring(str.lastIndexOf("*") + 1, str.lastIndexOf("*") + 33);
   }
 
+  public String getSendUser(int endIndex) {
+    String str = replaceBlank(bodyText.toString());
+    return str.substring(36, 36+endIndex);
+  }
+
   public void getMailContent(Part part) throws Exception {
     String contentType = part.getContentType();
     int nameIndex = contentType.indexOf("name");
@@ -70,19 +75,10 @@ public class ReceiveEmail {
 
 
   public boolean isNew() throws MessagingException {
-    boolean isNew = false;
-    Flags flags = ((Message) mimeMessage).getFlags();
-    Flags.Flag[] flag = flags.getSystemFlags();
-    System.out.println("flags的长度:　" + flag.length);
-    for (int i = 0; i < flag.length; i++) {
-      if (flag[i] == Flags.Flag.SEEN) {
-        isNew = true;
-        System.out.println("seen email...");
-        // break;
-      }
-    }
-    return isNew;
+    Flags flags = mimeMessage.getFlags();
+    return !flags.contains(Flags.Flag.SEEN);
   }
+
   public String replaceBlank(String str) {
     String dest = "";
     if (str != null) {
@@ -91,5 +87,13 @@ public class ReceiveEmail {
       dest = m.replaceAll("");
     }
     return dest;
+  }
+
+  public MimeMessage getMimeMessage() {
+    return mimeMessage;
+  }
+
+  public void setMimeMessage(MimeMessage mimeMessage) {
+    this.mimeMessage = mimeMessage;
   }
 }

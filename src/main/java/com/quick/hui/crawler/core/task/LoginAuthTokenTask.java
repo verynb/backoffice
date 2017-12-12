@@ -3,9 +3,11 @@ package com.quick.hui.crawler.core.task;
 import com.quick.hui.crawler.core.entity.CrawlHttpConf.HttpMethod;
 import com.quick.hui.crawler.core.entity.CrawlMeta;
 import com.quick.hui.crawler.core.entity.LoginAuthTokenData;
+import com.quick.hui.crawler.core.entity.ThreadConfig;
 import com.quick.hui.crawler.core.job.CrawJobResult;
 import com.quick.hui.crawler.core.job.SimpleCrawlJob;
 import com.quick.hui.crawler.core.utils.HttpUtils;
+import com.util.RandomUtil;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -21,6 +23,7 @@ import org.slf4j.LoggerFactory;
  * Created by yuanj on 2017/11/27.
  */
 public class LoginAuthTokenTask {
+
   private static Logger logger = LoggerFactory.getLogger(LoginAuthTokenTask.class);
   private static String URL = "https://www.bitbackoffice.com/auth/login";
 
@@ -28,7 +31,6 @@ public class LoginAuthTokenTask {
 
   public static CrawJobResult buildTask() {
     Set<String> selectRule = new HashSet<>();
-    selectRule.add("input[name=authenticity_token]");
     CrawlMeta crawlMeta = new CrawlMeta(URL, selectRule);
     CrawJobResult result = new CrawJobResult();
     result.setCrawlMeta(crawlMeta);
@@ -51,11 +53,31 @@ public class LoginAuthTokenTask {
         loginAuthTokenData = new LoginAuthTokenData(400, INCAPSULA_ERROR);
       }
     } catch (Exception e) {
-      logger.info("获取登录页面请求异常"+e.getMessage());
+      logger.info("获取登录页面请求异常" + e.getMessage());
       return new LoginAuthTokenData(500, e.getMessage());
     }
-    logger.info("获取登录页面auth_token成功auth_token:"+loginAuthTokenData.getResult());
+    logger.info("获取登录页面auth_token成功auth_token:" + loginAuthTokenData.getResult());
     return loginAuthTokenData;
+  }
+
+  public static LoginAuthTokenData tryTimes(ThreadConfig config) {
+    try {
+      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000);
+    } catch (InterruptedException e) {
+    }
+    for (int i = 1; i <= config.getTransferErrorTimes(); i++) {
+      LoginAuthTokenData loginAuthTokenData = execute();
+      if (loginAuthTokenData.getCode() == 200) {
+        return loginAuthTokenData;
+      }else {
+        try {
+          Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000);
+        } catch (InterruptedException e) {
+        }
+        logger.info("获取登录页面请求重试，剩余"+(config.getTransferErrorTimes()-i)+"次");
+      }
+    }
+    return new LoginAuthTokenData(400, INCAPSULA_ERROR);
   }
 
 }

@@ -16,6 +16,7 @@ public abstract class AbstractJob implements IJob {
     public void run() {
         try {
             this.beforeRun();
+            Thread.sleep(2000);
             this.doFetchPage();
         } catch (Exception e) {
         }

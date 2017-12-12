@@ -39,11 +39,11 @@ public class GetReceiverTask {
           .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
       UserInfo userInfo = GsonUtil.jsonToObject(EntityUtils.toString(response.getEntity()), UserInfo.class);
       if (!userInfo.getResponse()) {
-        logger.error("转账人" + userName + "不存在，也不存在于您的二进制树中");
+        logger.error("转账人[" + userName + "]不存在或者不存在于您的二进制树中");
       }
       return userInfo;
     } catch (Exception e) {
-      logger.error("线程" + Thread.currentThread().getName() + "获取转账人信息失败" + e.getMessage());
+      logger.error("获取转账人信息失败" + e.getMessage());
       return null;
     }
   }

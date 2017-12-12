@@ -12,7 +12,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,8 +48,13 @@ public class LoadData {
         }
       }
     } catch (IOException e) {
-      logger.info("加载用户数据失败" + e.getMessage());
-      throw new RuntimeException();
+      logger.info("加载用户数据失败,请检查account.csv格式是否正确");
+      System.out.println("输入任意结束:");
+      Scanner scan = new Scanner(System.in);
+      String read = scan.nextLine();
+      while (StringUtils.isBlank(read)) {
+      }
+      System.exit(0);
     }
     logger.info("加载用户数据成功");
     return userInfos;

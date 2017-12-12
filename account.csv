@@ -1,6 +1,4 @@
-tuser,tpassword,tmail,tmailpassword,ruser
-lhha001,hh8389lhhl,lianghuihua01@bookbitbtc.com,SHENzen007v,lhha002
-hg003,hgg1564hhg,lianghuihua01@bookbitbtc.com,SHENzen007v,lhha002
-wlzp10001,zzllw5820,lianghuihua01@bookbitbtc.com,SHENzen007v,lhha002
-
-
+tuser,tpassword,tmail,tmailpassword,ruser,flag
+lhha001,hh8389lhhl,lianghuihua01@bookbitbtc.com,SHENzen007v,lhha003,0
+lhha002,hh8389lhhl,lianghuihua01@bookbitbtc.com,SHENzen007v,lhha001,0
+lhha003,hh8389lhhl,lianghuihua01@bookbitbtc.com,SHENzen007v,lhha001,0

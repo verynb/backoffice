@@ -5,15 +5,8 @@ import com.quick.hui.crawler.core.entity.CrawlMeta;
 import com.quick.hui.crawler.core.job.CrawJobResult;
 import com.quick.hui.crawler.core.utils.HttpUtils;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.HttpResponse;
-import org.apache.http.util.EntityUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

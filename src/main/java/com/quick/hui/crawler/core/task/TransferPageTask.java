@@ -47,7 +47,7 @@ public class TransferPageTask {
       Element walletElement = doc.select("select[name=partition_transfer_partition[user_wallet_id]]").first();
 
       if(Objects.isNull(walletElement)){
-        logger.info("线程"+Thread.currentThread().getName()+"未获取到转账页面数据");
+        logger.info("未获取到转账页面数据");
         return new TransferPageData("", "", Lists.newArrayList());
       }
       List<TransferWallet> transferWallets = walletElement.children().stream()
@@ -61,14 +61,14 @@ public class TransferPageTask {
       Element authTokenElement = doc.select("input[name=authenticity_token]").first();
 
       Element transferUserIdElement = doc.select("input[name=partition_transfer_partition[user_id]]").first();
-      logger.info("线程"+Thread.currentThread().getName()+"获取到转账页面数据成功,返回数据如下:");
-      logger.info("线程"+Thread.currentThread().getName()+"authToken:"+authTokenElement.val());
-      logger.info("线程"+Thread.currentThread().getName()+"transferUserId:"+transferUserIdElement.val());
-      logger.info("线程"+Thread.currentThread().getName()+"transferWallets:"+transferWallets.toString());
+      logger.info("获取到转账页面数据成功,返回数据如下:");
+      logger.info("authToken="+authTokenElement.val());
+      logger.info("transferUserId="+transferUserIdElement.val());
+      logger.info("transferWallets="+transferWallets.toString());
       return new TransferPageData(authTokenElement.val(), transferUserIdElement.val(), transferWallets);
 
     } catch (Exception e) {
-      logger.info("线程"+Thread.currentThread().getName()+"获取到转账页面请求异常"+e.getMessage());
+      logger.info("获取到转账页面请求异常"+e.getMessage());
       return new TransferPageData("", "", Lists.newArrayList());
     }
   }

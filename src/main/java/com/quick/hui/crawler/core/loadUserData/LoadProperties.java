@@ -9,6 +9,8 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Scanner;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,8 +41,14 @@ public class LoadProperties {
       Integer threadPoolSize = Integer.valueOf(p.get("thread.pool.size").toString());
       return new ThreadConfig(mailSpaceTime, requestSpaceTime, mailReceiveErrorTimes, transferErrorTimes,
           threadSpaceTime,threadPoolSize);
-    } catch (IOException e) {
-
+    } catch (Exception e) {
+      logger.info("加载配置文件出错,请检查config文件格式是否正确");
+      System.out.println("输入任意结束:");
+      Scanner scan = new Scanner(System.in);
+      String read = scan.nextLine();
+      while (StringUtils.isBlank(read)) {
+      }
+      System.exit(0);
     } finally {
       try {
         is.close();
@@ -65,8 +73,14 @@ public class LoadProperties {
       p.forEach((k, v) -> {
         cookieMap.put(k.toString(), v.toString());
       });
-    } catch (IOException e) {
-
+    } catch (Exception e) {
+      logger.info("加载cookie文件出错,请检查cookies文件格式是否正确");
+      System.out.println("输入任意结束:");
+      Scanner scan = new Scanner(System.in);
+      String read = scan.nextLine();
+      while (StringUtils.isBlank(read)) {
+      }
+      System.exit(0);
     } finally {
       try {
         is.close();
