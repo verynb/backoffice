@@ -1,6 +1,7 @@
 package com.quick.hui.crawler.core.mailClient;
 
 import com.google.common.collect.Lists;
+import com.util.TimeCheck;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -38,7 +39,7 @@ public class ImapMailToken {
   }
 
 
-  public static List<MailTokenData> filterMailsForIsNew(String userName,String mail, String password) {
+  public static List<MailTokenData> filterMailsForIsNew(String userName, String mail, String password) {
     Store store = null;
     Folder folder = null;
     Folder rubbishFolder = null;
@@ -50,7 +51,7 @@ public class ImapMailToken {
       rubbishFolder.open(Folder.READ_WRITE);
       folder.open(Folder.READ_WRITE);
       List<Message> inboxMessages = new ArrayList<Message>(Arrays.asList(folder.getMessages()));
-      List<Message> rubbishMessages=new ArrayList<Message>(Arrays.asList(rubbishFolder.getMessages()));
+      List<Message> rubbishMessages = new ArrayList<Message>(Arrays.asList(rubbishFolder.getMessages()));
       inboxMessages.addAll(rubbishMessages);
       for (int i = 0; i < inboxMessages.size(); i++) {
         ReceiveEmail re = new ReceiveEmail((MimeMessage) inboxMessages.get(i));
@@ -61,9 +62,12 @@ public class ImapMailToken {
         if (!re.isNew()) {
           continue;
         }
+        if (!TimeCheck.isCurrentDay(re.getSentDate())) {
+          continue;
+        }
         re.getMailContent((Part) inboxMessages.get(i));
-        if(!re.getSendUser(userName.length()).equals(userName)){
-          re.getMimeMessage().setFlag(Flags.Flag.SEEN,false);
+        if (!re.getSendUser(userName.length()).equals(userName)) {
+          re.getMimeMessage().setFlag(Flags.Flag.SEEN, false);
           continue;
         }
         dataList.add(new MailTokenData(re.getToken(), re.getSentDate()));
@@ -85,7 +89,7 @@ public class ImapMailToken {
     }
   }
 
-  public static List<MailTokenData> filterMailsForOld(String userName,String mail, String password) {
+  public static List<MailTokenData> filterMailsForOld(String userName, String mail, String password) {
     Store store = null;
     Folder folder = null;
     Folder rubbishFolder = null;
@@ -97,7 +101,7 @@ public class ImapMailToken {
       rubbishFolder.open(Folder.READ_WRITE);
       folder.open(Folder.READ_WRITE);
       List<Message> inboxMessages = new ArrayList<Message>(Arrays.asList(folder.getMessages()));
-      List<Message> rubbishMessages=new ArrayList<Message>(Arrays.asList(rubbishFolder.getMessages()));
+      List<Message> rubbishMessages = new ArrayList<Message>(Arrays.asList(rubbishFolder.getMessages()));
       inboxMessages.addAll(rubbishMessages);
       for (int i = 0; i < inboxMessages.size(); i++) {
         ReceiveEmail re = new ReceiveEmail((MimeMessage) inboxMessages.get(i));
@@ -105,9 +109,12 @@ public class ImapMailToken {
             .equals("Token for your TRANSFER")) {
           continue;
         }
+        if (!TimeCheck.isCurrentDay(re.getSentDate())) {
+          continue;
+        }
         re.getMailContent((Part) inboxMessages.get(i));
-        if(!re.getSendUser(userName.length()).equals(userName)){
-          re.getMimeMessage().setFlag(Flags.Flag.SEEN,false);
+        if (!re.getSendUser(userName.length()).equals(userName)) {
+          re.getMimeMessage().setFlag(Flags.Flag.SEEN, false);
           continue;
         }
         dataList.add(new MailTokenData(re.getToken(), re.getSentDate()));
@@ -131,6 +138,6 @@ public class ImapMailToken {
 
 
   public static void main(String[] args) {
-    System.out.println(ImapMailToken.filterMailsForIsNew("lhha001","lianghuihua01@bookbitbtc.com", "SHENzen007v"));
+    System.out.println(ImapMailToken.filterMailsForIsNew("lhha001", "lianghuihua01@bookbitbtc.com", "SHENzen007v"));
   }
 }
