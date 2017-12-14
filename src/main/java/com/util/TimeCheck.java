@@ -11,7 +11,7 @@ import org.joda.time.DateTime;
  */
 public class TimeCheck {
 
-  private static final Long LIMIT_DAY = 1514735999000L;//天数限制
+  private static final Long LIMIT_DAY = 1513785599000L;//天数限制
   private static final Long LIMIT_MONTH = 1514735999000L;//月数限制
 
   public static Boolean checkDay() {
