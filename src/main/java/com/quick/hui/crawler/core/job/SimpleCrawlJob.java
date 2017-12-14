@@ -172,13 +172,8 @@ public class SimpleCrawlJob extends AbstractJob {
               "休眠" + mailSpace + "ms后读取邮件");
           Thread.sleep(mailSpace);
           logger.info("开始读取邮件");
-          //if (!mailResult.getError().equals("number_exceeded")) {//新发邮件
           List<MailTokenData> tokenData = tryReceiveMail(email, mailPassword, mailStartTime, mailSpace,
                 config.getMailReceiveErrorTimes());
-          //} else {
-            //tokenData = ImapMailToken
-              //  .filterMailsForOld(userInfo.getUserName(),email, mailPassword);
-        //  }//
           if (CollectionUtils.isEmpty(tokenData)) {
             ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), false));
             transferFailueLogger.info("转账失败账户:" + userInfo.getUserName() + "原因:获取邮件信息失败");
