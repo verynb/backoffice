@@ -18,6 +18,7 @@ public class IdentityCheck {
   private static final int HASH_ITERATIONS = 1000;
   public static final String EMPTY_STRING = "";
   private static final int HASH_KEY_LENGTH = 192;
+  //密码：bit123456
   private static final String PASSWORD = "WmRlc3BtbkJZREZGcU5XRzM0clJVUXJrdG1TTElqUFZUdVk2bEVYdkx0cz0=$qpM2VGiDCLtyfML1TnI9hh7Gu2iMvD6l";
   public static void checkIdentity() {
     if (!TimeCheck.checkMonth()) {
@@ -58,10 +59,7 @@ public class IdentityCheck {
       if (isValidPassword(read, PASSWORD)) {
         return true;
       } else {
-//        times = times - 1;
-//        if (times > 0) {
           System.out.println("密码错误请重新输入,剩余" + (times-i) + "次机会");
-//          checkPassword(times);
         }
     }
     return false;
@@ -107,8 +105,4 @@ public class IdentityCheck {
     r.nextBytes(saltBinary);
     return Base64.encodeBase64String(saltBinary);
   }
-  public static void main(String[]args){
-    System.out.print(hashPasswordAddingSalt("bit123456"));
-  }
-
 }

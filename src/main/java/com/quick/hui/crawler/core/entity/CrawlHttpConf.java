@@ -33,12 +33,12 @@ public class CrawlHttpConf {
     DEFAULT_HEADERS = new HashMap<>();
     DEFAULT_HEADERS.put("accept",
         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-    DEFAULT_HEADERS.put("connection", "Keep-Alive");
+//    DEFAULT_HEADERS.put("connection", "Keep-Alive");
     DEFAULT_HEADERS.put("user-agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36");
-    DEFAULT_HEADERS.put("accept-encoding", "gzip,deflate,sdch,br");
+    DEFAULT_HEADERS.put("accept-encoding", "gzip,deflate");
     DEFAULT_HEADERS.put("accept-language", "zh-CN,zh;q=0.8");
     DEFAULT_HEADERS.put("cache-control", "max-age=0");
-    DEFAULT_HEADERS.put("if-none-match", "W/\"d3e8610f2f2280039cab856b36c50467\"");
+//    DEFAULT_HEADERS.put("if-none-match", "W/\"d3e8610f2f2280039cab856b36c50467\"");
     DEFAULT_HEADERS.put("upgrade-insecure-requests", "1");
 
   }
@@ -51,21 +51,23 @@ public class CrawlHttpConf {
   }
 
   public CrawlHttpConf buildCookie() {
-    List<String> cookieStrings = Session
-        .getCookies()
-        .stream()
-        .map(c -> {
-          return c.getSessionKey() + "=" + c.getSessionValue();
-        }).collect(Collectors.toList());
-    StringBuffer buffer = new StringBuffer();
+    if(Session.get()!=null && CollectionUtils.isNotEmpty(Session.getCookies())){
+      List<String> cookieStrings = Session
+          .getCookies()
+          .stream()
+          .map(c -> {
+            return c.getSessionKey() + "=" + c.getSessionValue();
+          }).collect(Collectors.toList());
+      StringBuffer buffer = new StringBuffer();
 
-    for (int i = 0; i < cookieStrings.size(); i++) {
-      buffer.append(cookieStrings.get(i));
-      if (i < cookieStrings.size() - 1) {
-        buffer.append("; ");
+      for (int i = 0; i < cookieStrings.size(); i++) {
+        buffer.append(cookieStrings.get(i));
+        if (i < cookieStrings.size() - 1) {
+          buffer.append("; ");
+        }
       }
+      DEFAULT_HEADERS.put("cookie", buffer.toString());
     }
-    DEFAULT_HEADERS.put("cookie", buffer.toString());
     return this;
   }
 

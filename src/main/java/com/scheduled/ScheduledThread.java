@@ -41,14 +41,14 @@ public class ScheduledThread {
     logger.info("应用启动。。。");
     logger.info("开始加载用户数据");
     List<TransferUserInfo> userInfos = LoadData.loadUserInfoData("./account.csv");
-    logger.info("开始加载cookie数据");
-    Map<String, String> cookie = LoadProperties.loadCookieProperties("./cookies.properties");
+//    logger.info("开始加载cookie数据");
+//    Map<String, String> cookie = LoadProperties.loadCookieProperties("./cookies.properties");
     ThreadConfig config = LoadProperties.loadConfigProperties("./config.properties");
 
     ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(config.getThreadPoolSize());
     for(int i=0;i<userInfos.size();i++){
       scheduledThreadPool.schedule(new SimpleCrawlJob(userInfos.get(i),
-              config, cookie),
+              config, null),
           1, TimeUnit.SECONDS);
       try {
         int space = RandomUtil.ranNum(config.getThreadspaceTime() * 1000);

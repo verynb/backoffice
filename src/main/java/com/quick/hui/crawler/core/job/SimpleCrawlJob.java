@@ -63,11 +63,12 @@ public class SimpleCrawlJob extends AbstractJob {
     this.userInfo = userInfo;
     this.config = config;
     this.cookies = cookies;
+    logger.info("userinfo===>"+userInfo.toString());
   }
 
   @Override
   public void beforeRun() {
-    initCookie();
+//    initCookie();
   }
 
   private void initCookie() {
@@ -99,16 +100,15 @@ public class SimpleCrawlJob extends AbstractJob {
    * 转账流程如下
    * 1.抓取登录静态页面，取到页面[authenticity_token]的值
    * 2.执行登录请求，获取登录后的cookies
-   * 3.拿到登录后重定向的页面，获取cookies
-   * 4.进入转账页面
-   * 4-1：获取转账金额
-   * 4-2：获取转账钱包ID
-   * 4-3：获取转账人ID
-   * 4-4：获取转账转账页面authenticity_token
-   * 5.获取转账户信息
-   * 6.向转账账户发邮件生成转账TOKEN
-   * 7.登录邮件获取token
-   * 8.完成转账
+   * 3.进入转账页面
+   * 3-1：获取转账金额
+   * 3-2：获取转账钱包ID
+   * 3-3：获取转账人ID
+   * 3-4：获取转账转账页面authenticity_token
+   * 4.获取转账户信息
+   * 5.向转账账户发邮件生成转账TOKEN
+   * 6.登录邮件获取token
+   * 7.完成转账
    */
   @Override
   public void doFetchPage() throws Exception {
