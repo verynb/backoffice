@@ -33,7 +33,7 @@ public class CrawlHttpConf {
     DEFAULT_HEADERS = new HashMap<>();
     DEFAULT_HEADERS.put("accept",
         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-//    DEFAULT_HEADERS.put("connection", "Keep-Alive");
+    DEFAULT_HEADERS.put("Connection", "close");
     DEFAULT_HEADERS.put("user-agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36");
     DEFAULT_HEADERS.put("accept-encoding", "gzip,deflate");
     DEFAULT_HEADERS.put("accept-language", "zh-CN,zh;q=0.8");
@@ -66,7 +66,7 @@ public class CrawlHttpConf {
           buffer.append("; ");
         }
       }
-      DEFAULT_HEADERS.put("cookie", buffer.toString());
+      requestHeaders.put("cookie", buffer.toString());
     }
     return this;
   }

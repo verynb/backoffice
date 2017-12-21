@@ -2,6 +2,7 @@ package com.quick.hui.crawler.core.task;
 
 import com.quick.hui.crawler.core.entity.CrawlHttpConf.HttpMethod;
 import com.quick.hui.crawler.core.entity.CrawlMeta;
+import com.quick.hui.crawler.core.entity.HttpResult;
 import com.quick.hui.crawler.core.entity.UserInfo;
 import com.quick.hui.crawler.core.job.CrawJobResult;
 import com.quick.hui.crawler.core.utils.GsonUtil;
@@ -34,10 +35,11 @@ public class GetReceiverTask {
 
   public static UserInfo execute(String userName) {
     CrawJobResult result = buildTask(userName);
+    HttpResult response=null;
     try {
-      HttpResponse response = HttpUtils
-          .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
-      UserInfo userInfo = GsonUtil.jsonToObject(EntityUtils.toString(response.getEntity()), UserInfo.class);
+      response = HttpUtils
+          .doGet(result.getCrawlMeta(), result.getHttpConf().buildCookie());
+      UserInfo userInfo = GsonUtil.jsonToObject(EntityUtils.toString(response.getResponse().getEntity()), UserInfo.class);
       if (!userInfo.getResponse()) {
         logger.error("转账人[" + userName + "]不存在或者不存在于您的二进制树中");
       }
@@ -45,6 +47,9 @@ public class GetReceiverTask {
     } catch (Exception e) {
       logger.error("获取转账人信息失败" + e.getMessage());
       return null;
+    }finally {
+      response.getHttpGet().releaseConnection();
+      response.getHttpClient().getConnectionManager().shutdown();
     }
   }
 }

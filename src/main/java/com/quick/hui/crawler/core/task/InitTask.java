@@ -3,6 +3,8 @@ package com.quick.hui.crawler.core.task;
 import com.google.common.collect.Maps;
 import com.quick.hui.crawler.core.entity.CrawlHttpConf.HttpMethod;
 import com.quick.hui.crawler.core.entity.CrawlMeta;
+import com.quick.hui.crawler.core.entity.HttpPostResult;
+import com.quick.hui.crawler.core.entity.HttpResult;
 import com.quick.hui.crawler.core.entity.LoginAuthTokenData;
 import com.quick.hui.crawler.core.job.CrawJobResult;
 import com.quick.hui.crawler.core.utils.GsonUtil;
@@ -67,9 +69,9 @@ public class InitTask {
 
   public static void reRecaptchaEcecute(String src) throws Exception {
     CrawJobResult result = buildIncapsulaResourceTask(src);
-    HttpResponse resourceResponse = HttpUtils
-        .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
-    Document resourceDoc = Jsoup.parse(EntityUtils.toString(resourceResponse.getEntity()));
+    HttpResult resourceResponse = HttpUtils
+        .doGet(result.getCrawlMeta(), result.getHttpConf().buildCookie());
+    Document resourceDoc = Jsoup.parse(EntityUtils.toString(resourceResponse.getResponse().getEntity()));
 
     Element recaptchaKey = resourceDoc.select("div[class=g-recaptcha]").first();
     if (!Objects.isNull(recaptchaKey)) {
@@ -83,10 +85,10 @@ public class InitTask {
       Map<String, String> jsonParam = Maps.newHashMap();
       jsonParam.put("g-recaptcha-response", recaptchaKey.attr("data-sitekey"));
       System.out.println("jsonParam=======>" + GsonUtil.objectTojson(jsonParam));
-      HttpResponse recaptchaResponse = HttpUtils
+      HttpPostResult recaptchaResponse = HttpUtils
           .doPostJson(recaptchaResult.getCrawlMeta(), recaptchaResult.getHttpConf().buildCookie()
               );
-      if (recaptchaResponse.getStatusLine().getStatusCode() == 200) {
+      if (recaptchaResponse.getResponse().getStatusLine().getStatusCode() == 200) {
         Thread.sleep(2000);
         execute();
       }
@@ -98,9 +100,9 @@ public class InitTask {
   public static LoginAuthTokenData execute() {
     CrawJobResult result = buildFirstPageTask();
     try {
-      HttpResponse response = HttpUtils
-          .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
-      Document doc = Jsoup.parse(EntityUtils.toString(response.getEntity()));
+      HttpResult response = HttpUtils
+          .doGet(result.getCrawlMeta(), result.getHttpConf().buildCookie());
+      Document doc = Jsoup.parse(EntityUtils.toString(response.getResponse().getEntity()));
       Element element = doc.select("iframe[src]").first();
       if (!Objects.isNull(element)) {
         String src = element.attr("src");
@@ -118,9 +120,9 @@ public class InitTask {
   public static int executeSucess() {
     CrawJobResult result = buildFirstPageTask();
     try {
-      HttpResponse response = HttpUtils
-          .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
-      Document doc = Jsoup.parse(EntityUtils.toString(response.getEntity()));
+      HttpResult response = HttpUtils
+          .doGet(result.getCrawlMeta(), result.getHttpConf().buildCookie());
+      Document doc = Jsoup.parse(EntityUtils.toString(response.getResponse().getEntity()));
       Element element = doc.select("iframe[src]").first();
       if (!Objects.isNull(element)) {
         return 400;

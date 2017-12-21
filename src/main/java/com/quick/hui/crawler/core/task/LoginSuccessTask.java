@@ -2,6 +2,7 @@ package com.quick.hui.crawler.core.task;
 
 import com.quick.hui.crawler.core.entity.CrawlHttpConf.HttpMethod;
 import com.quick.hui.crawler.core.entity.CrawlMeta;
+import com.quick.hui.crawler.core.entity.HttpResult;
 import com.quick.hui.crawler.core.job.CrawJobResult;
 import com.quick.hui.crawler.core.utils.HttpUtils;
 import java.util.HashSet;
@@ -29,14 +30,18 @@ public class LoginSuccessTask {
 
   public static int execute() {
     CrawJobResult result = buildTask();
+    HttpResult response=null;
     try {
-      HttpResponse response = HttpUtils
-          .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
-      logger.info("线程"+Thread.currentThread().getName()+"登录后获取主页成功responseCode:" + response.getStatusLine().getStatusCode());
-      return response.getStatusLine().getStatusCode();
+      response = HttpUtils
+          .doGet(result.getCrawlMeta(), result.getHttpConf().buildCookie());
+      logger.info("线程"+Thread.currentThread().getName()+"登录后获取主页成功responseCode:" + response.getResponse().getStatusLine().getStatusCode());
+      return response.getResponse().getStatusLine().getStatusCode();
     } catch (Exception e) {
       logger.error("线程"+Thread.currentThread().getName()+"登录后获取主页请求异常"+e.getMessage());
       return 500;
+    }finally {
+      response.getHttpGet().releaseConnection();
+      response.getHttpClient().getConnectionManager().shutdown();
     }
   }
 }

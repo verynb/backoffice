@@ -2,6 +2,7 @@ package com.quick.hui.crawler.core.task;
 
 import com.quick.hui.crawler.core.entity.CrawlHttpConf.HttpMethod;
 import com.quick.hui.crawler.core.entity.CrawlMeta;
+import com.quick.hui.crawler.core.entity.HttpPostResult;
 import com.quick.hui.crawler.core.entity.LoginAuthTokenData;
 import com.quick.hui.crawler.core.entity.ThreadConfig;
 import com.quick.hui.crawler.core.job.CrawJobResult;
@@ -43,19 +44,23 @@ public class LoginTask {
   public static int execute(String tokenValue, String userName, String password) {
     logger.info("登录参数{tokenValue="+tokenValue+",userName="+userName+", password="+password+"}");
     CrawJobResult result = buildTask(tokenValue, userName, password);
+    HttpPostResult response=null;
     try {
-      HttpResponse response = HttpUtils
-          .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
-      if(response.getStatusLine().getStatusCode()!=302){
+      response = HttpUtils
+          .doPost(result.getCrawlMeta(), result.getHttpConf().buildCookie());
+      if(response.getResponse().getStatusLine().getStatusCode()!=302){
         //用户名密码错误
-        logger.info("登录失败responseCode:" + response.getStatusLine().getStatusCode());
+        logger.info("登录失败responseCode:" + response.getResponse().getStatusLine().getStatusCode());
         return 400;
       }
-      logger.info("登录成功responseCode:" + response.getStatusLine().getStatusCode());
-      return response.getStatusLine().getStatusCode();
+      logger.info("登录成功responseCode:" + response.getResponse().getStatusLine().getStatusCode());
+      return response.getResponse().getStatusLine().getStatusCode();
     } catch (Exception e) {
       logger.error("登录请求异常"+e.getMessage());
       return 500;
+    }finally {
+      response.getHttpPost().releaseConnection();
+      response.getHttpClient().getConnectionManager().shutdown();
     }
 
   }

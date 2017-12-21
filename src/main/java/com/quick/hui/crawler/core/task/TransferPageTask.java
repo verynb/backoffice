@@ -3,6 +3,7 @@ package com.quick.hui.crawler.core.task;
 import com.google.common.collect.Lists;
 import com.quick.hui.crawler.core.entity.CrawlHttpConf.HttpMethod;
 import com.quick.hui.crawler.core.entity.CrawlMeta;
+import com.quick.hui.crawler.core.entity.HttpResult;
 import com.quick.hui.crawler.core.entity.ThreadConfig;
 import com.quick.hui.crawler.core.entity.TransferPageData;
 import com.quick.hui.crawler.core.entity.TransferWallet;
@@ -42,10 +43,11 @@ public class TransferPageTask {
 
   public static TransferPageData execute() {
     CrawJobResult result = buildTask();
+    HttpResult response=null;
     try {
-      HttpResponse response = HttpUtils
-          .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
-      Document doc = Jsoup.parse(EntityUtils.toString(response.getEntity()));
+      response = HttpUtils
+          .doGet(result.getCrawlMeta(), result.getHttpConf().buildCookie());
+      Document doc = Jsoup.parse(EntityUtils.toString(response.getResponse().getEntity()));
 
       Element walletElement = doc.select("select[name=partition_transfer_partition[user_wallet_id]]").first();
 
@@ -73,6 +75,9 @@ public class TransferPageTask {
     } catch (Exception e) {
       logger.info("获取到转账页面请求异常"+e.getMessage());
       return new TransferPageData("", "", Lists.newArrayList());
+    }finally {
+      response.getHttpGet().releaseConnection();
+      response.getHttpClient().getConnectionManager().shutdown();
     }
   }
 

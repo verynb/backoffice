@@ -2,6 +2,7 @@ package com.quick.hui.crawler.core.task;
 
 import com.quick.hui.crawler.core.entity.CrawlHttpConf.HttpMethod;
 import com.quick.hui.crawler.core.entity.CrawlMeta;
+import com.quick.hui.crawler.core.entity.HttpResult;
 import com.quick.hui.crawler.core.entity.LoginAuthTokenData;
 import com.quick.hui.crawler.core.entity.ThreadConfig;
 import com.quick.hui.crawler.core.job.CrawJobResult;
@@ -41,40 +42,43 @@ public class LoginAuthTokenTask {
   public static LoginAuthTokenData execute() {
     CrawJobResult result = buildTask();
     LoginAuthTokenData loginAuthTokenData = null;
+    HttpResult response=null;
     try {
-      HttpResponse response = HttpUtils
-          .request(result.getCrawlMeta(), result.getHttpConf().buildCookie());
-      Document doc = Jsoup.parse(EntityUtils.toString(response.getEntity()));
+      response = HttpUtils.doGet(result.getCrawlMeta(), result.getHttpConf());
+      Document doc = Jsoup.parse(EntityUtils.toString(response.getResponse().getEntity()));
       Element element = doc.select("input[name=authenticity_token]").first();
       if (!Objects.isNull(element)) {
         loginAuthTokenData = new LoginAuthTokenData(200, element.val());
+        logger.info("获取登录页面auth_token成功auth_token:" + loginAuthTokenData.getResult());
       } else {
-        logger.info("获取登录页面auth_token失败");
         loginAuthTokenData = new LoginAuthTokenData(400, INCAPSULA_ERROR);
+        logger.info("获取登录页面auth_token失败");
       }
     } catch (Exception e) {
       logger.info("获取登录页面请求异常" + e.getMessage());
       return new LoginAuthTokenData(500, e.getMessage());
+    }finally {
+      response.getHttpGet().releaseConnection();
+      response.getHttpClient().getConnectionManager().shutdown();
     }
-    logger.info("获取登录页面auth_token成功auth_token:" + loginAuthTokenData.getResult());
     return loginAuthTokenData;
   }
 
   public static LoginAuthTokenData tryTimes(ThreadConfig config) {
     try {
-      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
+      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000 + 5000);
     } catch (InterruptedException e) {
     }
     for (int i = 1; i <= config.getTransferErrorTimes(); i++) {
       LoginAuthTokenData loginAuthTokenData = execute();
       if (loginAuthTokenData.getCode() == 200) {
         return loginAuthTokenData;
-      }else {
+      } else {
         try {
-          Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
+          Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000 + 5000);
         } catch (InterruptedException e) {
         }
-        logger.info("获取登录页面请求重试，剩余"+(config.getTransferErrorTimes()-i)+"次");
+        logger.info("获取登录页面请求重试，剩余" + (config.getTransferErrorTimes() - i) + "次");
       }
     }
     return new LoginAuthTokenData(400, INCAPSULA_ERROR);

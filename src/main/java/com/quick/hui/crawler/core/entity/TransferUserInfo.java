@@ -111,9 +111,7 @@ public class TransferUserInfo {
   public String toString() {
     return "TransferUserInfo{" +
         "转出帐号='" + userName + '\'' +
-        ", 转出帐号密码='" + password + '\'' +
         ", 转出帐号邮箱='" + email + '\'' +
-        ", 邮箱密码='" + mailPassword + '\'' +
         ", 接收帐号='" + transferTo + '\'' +
         '}';
   }
