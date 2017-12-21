@@ -38,7 +38,7 @@ public class ScheduledThread {
 
   public static void main(String[] args) {
     IdentityCheck.checkIdentity();
-    logger.info("[version=1.0 2017-12-21],应用启动。。。");
+    logger.info("[version=0.5 2017-12-21],应用启动。。。");
     logger.info("开始加载用户数据");
     List<TransferUserInfo> userInfos = LoadData.loadUserInfoData("./account.csv");
 //    logger.info("开始加载cookie数据");

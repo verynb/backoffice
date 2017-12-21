@@ -6,8 +6,13 @@ import com.quick.hui.crawler.core.entity.TransferUserInfo;
 import de.siegmar.fastcsv.reader.CsvContainer;
 import de.siegmar.fastcsv.reader.CsvReader;
 import de.siegmar.fastcsv.reader.CsvRow;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.List;
@@ -63,9 +68,14 @@ public class LoadData {
 
   public static void writeResult(List<TransferUserInfo> userInfos) {
     try {
+
+      Writer writer = new BufferedWriter(
+          new OutputStreamWriter(
+              new FileOutputStream(new File("./account.csv")), "UTF-8"));
+
       FileWriter fw = new FileWriter("./account.csv");
       String header = "tuser,tpassword,tmail,tmailpassword,ruser,flag\r\n";
-      fw.write(header);
+      writer.write(header);
       for (int i = 0; i < userInfos.size(); i++) {
         TransferUserInfo info=userInfos.get(i);
         StringBuffer str = new StringBuffer();
@@ -75,10 +85,10 @@ public class LoadData {
             +info.getMailPassword().toString()+","
             +info.getTransferTo().toString()+","
             +info.getNum().toString()+"\r\n");
-        fw.write(str.toString());
-        fw.flush();
+        writer.write(str.toString());
+        writer.flush();
       }
-      fw.close();
+      writer.close();
     } catch (IOException e) {
       e.printStackTrace();
     }
