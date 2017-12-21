@@ -2,8 +2,11 @@ package com.quick.hui.crawler.core.task;
 
 import com.quick.hui.crawler.core.entity.CrawlHttpConf.HttpMethod;
 import com.quick.hui.crawler.core.entity.CrawlMeta;
+import com.quick.hui.crawler.core.entity.LoginAuthTokenData;
+import com.quick.hui.crawler.core.entity.ThreadConfig;
 import com.quick.hui.crawler.core.job.CrawJobResult;
 import com.quick.hui.crawler.core.utils.HttpUtils;
+import com.util.RandomUtil;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -56,6 +59,27 @@ public class LoginTask {
     }
 
   }
+
+  public static int tryTimes(ThreadConfig config,String tokenValue, String userName, String password) {
+    try {
+      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
+    } catch (InterruptedException e) {
+    }
+    for (int i = 1; i <= config.getTransferErrorTimes(); i++) {
+      int code = execute(tokenValue,userName,password);
+      if (code == 302) {
+        return 302;
+      }else {
+        try {
+          Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
+        } catch (InterruptedException e) {
+        }
+        logger.info("获取登录页面请求重试，剩余"+(config.getTransferErrorTimes()-i)+"次");
+      }
+    }
+    return 400;
+  }
+
   /*public static void main(String args[]){
     LoginTask.execute("1","1","1");
   }*/

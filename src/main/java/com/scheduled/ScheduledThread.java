@@ -49,9 +49,9 @@ public class ScheduledThread {
     for(int i=0;i<userInfos.size();i++){
       scheduledThreadPool.schedule(new SimpleCrawlJob(userInfos.get(i),
               config, null),
-          1, TimeUnit.SECONDS);
+          5, TimeUnit.SECONDS);
       try {
-        int space = RandomUtil.ranNum(config.getThreadspaceTime() * 1000);
+        int space = RandomUtil.ranNum(config.getThreadspaceTime() * 1000+5000);
         logger.info("任务时间间隔:" + space + "ms");
         Thread.sleep(space);
       } catch (InterruptedException e) {

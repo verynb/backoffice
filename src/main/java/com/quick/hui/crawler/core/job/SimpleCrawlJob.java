@@ -118,12 +118,12 @@ public class SimpleCrawlJob extends AbstractJob {
     if (tokenData.getCode() == 200) {
       //登录
       logger.info("开始登录");
-      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000);
-      int loginCode = LoginTask.execute(tokenData.getResult(),
+      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
+      int loginCode = LoginTask.tryTimes(config,tokenData.getResult(),
           this.userInfo.getUserName(), this.userInfo.getPassword());
       //登录成功
       if (loginCode == 302) {
-        Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000);
+        Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
         transfer(this.userInfo.getEmail(), this.userInfo.getMailPassword(),
             this.userInfo.getTransferTo());
       } else {
@@ -144,7 +144,7 @@ public class SimpleCrawlJob extends AbstractJob {
   private void transfer(String email, String mailPassword, String transferTo)
       throws InterruptedException {
     logger.info("开始抓取抓取转账页面数据");
-    TransferPageData getTransferPage = TransferPageTask.execute();
+    TransferPageData getTransferPage = TransferPageTask.tryTimes(config);
     if (CollectionUtils.isNotEmpty(getTransferPage.getTransferWallets())) {
       List<TransferWallet> filterList = getTransferPage.getTransferWallets()
           .stream()
@@ -156,10 +156,10 @@ public class SimpleCrawlJob extends AbstractJob {
         return;
       }
       TransferWallet wallet = filterList.get(0);
-      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000);
+      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
       UserInfo receiverInfo = GetReceiverTask.execute(transferTo);
       if (!Objects.isNull(receiverInfo) && receiverInfo.getResponse()) {
-        Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000);
+        Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
         logger.info(
             "获取转出账户信息成功===>" + receiverInfo.toString());
         SendMailResult mailResult =

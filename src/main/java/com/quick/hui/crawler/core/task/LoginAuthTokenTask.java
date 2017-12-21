@@ -62,7 +62,7 @@ public class LoginAuthTokenTask {
 
   public static LoginAuthTokenData tryTimes(ThreadConfig config) {
     try {
-      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000);
+      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
     } catch (InterruptedException e) {
     }
     for (int i = 1; i <= config.getTransferErrorTimes(); i++) {
@@ -71,7 +71,7 @@ public class LoginAuthTokenTask {
         return loginAuthTokenData;
       }else {
         try {
-          Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000);
+          Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
         } catch (InterruptedException e) {
         }
         logger.info("获取登录页面请求重试，剩余"+(config.getTransferErrorTimes()-i)+"次");

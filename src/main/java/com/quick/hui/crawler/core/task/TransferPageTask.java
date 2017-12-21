@@ -3,15 +3,18 @@ package com.quick.hui.crawler.core.task;
 import com.google.common.collect.Lists;
 import com.quick.hui.crawler.core.entity.CrawlHttpConf.HttpMethod;
 import com.quick.hui.crawler.core.entity.CrawlMeta;
+import com.quick.hui.crawler.core.entity.ThreadConfig;
 import com.quick.hui.crawler.core.entity.TransferPageData;
 import com.quick.hui.crawler.core.entity.TransferWallet;
 import com.quick.hui.crawler.core.job.CrawJobResult;
 import com.quick.hui.crawler.core.utils.HttpUtils;
+import com.util.RandomUtil;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
@@ -71,6 +74,26 @@ public class TransferPageTask {
       logger.info("获取到转账页面请求异常"+e.getMessage());
       return new TransferPageData("", "", Lists.newArrayList());
     }
+  }
+
+  public static TransferPageData tryTimes(ThreadConfig config) {
+    try {
+      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
+    } catch (InterruptedException e) {
+    }
+    for (int i = 1; i <= config.getTransferErrorTimes(); i++) {
+      TransferPageData code = execute();
+      if (CollectionUtils.isNotEmpty(code.getTransferWallets())) {
+        return code;
+      }else {
+        try {
+          Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
+        } catch (InterruptedException e) {
+        }
+        logger.info("获取登录页面请求重试，剩余"+(config.getTransferErrorTimes()-i)+"次");
+      }
+    }
+    return new TransferPageData("", "", Lists.newArrayList());
   }
 
 }
