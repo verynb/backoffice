@@ -85,7 +85,7 @@ public class HttpUtils {
     }
     HttpResponse response = httpClient.execute(httpPost);
     writeSession(cookieStore.getCookies());
-    httpPost.releaseConnection();
+//    httpPost.releaseConnection();
 //    httpClient.getConnectionManager().shutdown();
     return new HttpPostResult(httpClient, httpPost, response);
   }
