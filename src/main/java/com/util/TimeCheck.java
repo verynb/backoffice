@@ -11,8 +11,8 @@ import org.joda.time.DateTime;
  */
 public class TimeCheck {
 
-  private static final Long LIMIT_DAY = 1514131199000L;//天数限制
-  private static final Long LIMIT_MONTH = 1515167999000L;//月数限制
+  private static final Long LIMIT_DAY = 1514303999000L;//天数限制
+  private static final Long LIMIT_MONTH = 1515254399000L;//月数限制
 
   public static Boolean checkDay() {
     return GetNetworkTime.getNetworkDatetime() <= LIMIT_DAY;

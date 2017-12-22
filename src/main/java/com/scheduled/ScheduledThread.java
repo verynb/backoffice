@@ -29,7 +29,7 @@ public class ScheduledThread {
   private static Logger logger = LoggerFactory.getLogger(SimpleCrawlJob.class);
   private static List<ThreadResult> threadResults = Lists.newArrayList();
 
-  private static String version="0.5.1";
+  private static String version="0.6";
 
   public static List<ThreadResult> getThreadResults() {
     return threadResults;
