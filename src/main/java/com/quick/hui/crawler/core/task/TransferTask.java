@@ -1,5 +1,7 @@
 package com.quick.hui.crawler.core.task;
 
+import static sun.security.pkcs.PKCS8Key.version;
+
 import com.quick.hui.crawler.core.entity.CrawlHttpConf.HttpMethod;
 import com.quick.hui.crawler.core.entity.CrawlMeta;
 import com.quick.hui.crawler.core.entity.HttpPostResult;
@@ -58,6 +60,7 @@ public class TransferTask {
       response = HttpUtils
           .doPostJson(result.getCrawlMeta(), result.getHttpConf().buildCookie());
       String returnStr = EntityUtils.toString(response.getResponse().getEntity());
+      logger.info("转账服务器返回:" +returnStr);
       if (returnStr.contains("invalid_token")) {
         logger.info("转账token:" + param.getToken() + "不正确");
         return new TransferResult("error", "invalid_token");
@@ -66,15 +69,15 @@ public class TransferTask {
         return GsonUtil.jsonToObject(returnStr, TransferResult.class);
       } else {
         logger.info("未知错误");
-        return new TransferResult("error", "onkown");
+        return new TransferResult("error", "unkown");
       }
     } catch (Exception e) {
-      logger.error("转账请求异常:" + e.getMessage());
+      logger.info("转账请求异常:" + e.getMessage());
       return new TransferResult("error", "500");
     } finally {
       response.getHttpPost().releaseConnection();
       response.getHttpClient().getConnectionManager().shutdown();
+      logger.info("释放连接");
     }
   }
-
 }

@@ -53,6 +53,7 @@ public class TransferPageTask {
 
       if(Objects.isNull(walletElement)){
         logger.info("未获取到转账页面数据");
+        logger.info("获取转账页面-"+doc.toString());
         return new TransferPageData("", "", Lists.newArrayList());
       }
       List<TransferWallet> transferWallets = walletElement.children().stream()
@@ -73,7 +74,7 @@ public class TransferPageTask {
       return new TransferPageData(authTokenElement.val(), transferUserIdElement.val(), transferWallets);
 
     } catch (Exception e) {
-      logger.info("获取到转账页面请求异常"+e.getMessage());
+      logger.info("获取到转账页面请求异常-"+e.getMessage());
       return new TransferPageData("", "", Lists.newArrayList());
     }finally {
       response.getHttpGet().releaseConnection();
@@ -86,7 +87,7 @@ public class TransferPageTask {
       Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
     } catch (InterruptedException e) {
     }
-    for (int i = 1; i <= config.getTransferErrorTimes(); i++) {
+    for (int i = 1; i <= config.getTransferErrorTimes()+2; i++) {
       TransferPageData code = execute();
       if (CollectionUtils.isNotEmpty(code.getTransferWallets())) {
         return code;
@@ -95,7 +96,7 @@ public class TransferPageTask {
           Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
         } catch (InterruptedException e) {
         }
-        logger.info("获取登录页面请求重试，剩余"+(config.getTransferErrorTimes()-i)+"次");
+        logger.info("获取登录页面请求重试，剩余"+(config.getTransferErrorTimes()+2-i)+"次");
       }
     }
     return new TransferPageData("", "", Lists.newArrayList());

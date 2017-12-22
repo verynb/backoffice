@@ -68,6 +68,8 @@ public class SimpleCrawlJob extends AbstractJob {
 
   @Override
   public void beforeRun() {
+    logger.info(ScheduledThread.getVersionData());
+
 //    initCookie();
   }
 

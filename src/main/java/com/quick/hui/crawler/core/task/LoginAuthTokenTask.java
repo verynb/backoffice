@@ -45,6 +45,7 @@ public class LoginAuthTokenTask {
     HttpResult response=null;
     try {
       response = HttpUtils.doGet(result.getCrawlMeta(), result.getHttpConf());
+      logger.info("LoginAuthToken request header="+result.getHttpConf().getRequestHeaders().toString());
       Document doc = Jsoup.parse(EntityUtils.toString(response.getResponse().getEntity()));
       Element element = doc.select("input[name=authenticity_token]").first();
       if (!Objects.isNull(element)) {
@@ -52,7 +53,7 @@ public class LoginAuthTokenTask {
         logger.info("获取登录页面auth_token成功auth_token:" + loginAuthTokenData.getResult());
       } else {
         loginAuthTokenData = new LoginAuthTokenData(400, INCAPSULA_ERROR);
-        logger.info("获取登录页面auth_token失败");
+        logger.info("获取登录页面auth_token失败"+doc.toString());
       }
     } catch (Exception e) {
       logger.info("获取登录页面请求异常" + e.getMessage());
@@ -69,7 +70,7 @@ public class LoginAuthTokenTask {
       Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000 + 5000);
     } catch (InterruptedException e) {
     }
-    for (int i = 1; i <= config.getTransferErrorTimes(); i++) {
+    for (int i = 1; i <= config.getTransferErrorTimes()+2; i++) {
       LoginAuthTokenData loginAuthTokenData = execute();
       if (loginAuthTokenData.getCode() == 200) {
         return loginAuthTokenData;
@@ -78,7 +79,7 @@ public class LoginAuthTokenTask {
           Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000 + 5000);
         } catch (InterruptedException e) {
         }
-        logger.info("获取登录页面请求重试，剩余" + (config.getTransferErrorTimes() - i) + "次");
+        logger.info("获取登录页面请求重试，剩余" + (config.getTransferErrorTimes()+2 - i) + "次");
       }
     }
     return new LoginAuthTokenData(400, INCAPSULA_ERROR);

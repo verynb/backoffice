@@ -50,13 +50,13 @@ public class LoginTask {
           .doPost(result.getCrawlMeta(), result.getHttpConf().buildCookie());
       if(response.getResponse().getStatusLine().getStatusCode()!=302){
         //用户名密码错误
-        logger.info("登录失败responseCode:" + response.getResponse().getStatusLine().getStatusCode());
+        logger.info("登录失败-用户名密码错误【 userName="+userName+", password="+password+"】");
         return 400;
       }
-      logger.info("登录成功responseCode:" + response.getResponse().getStatusLine().getStatusCode());
+      logger.info("登录成功-responseCode:" + response.getResponse().getStatusLine().getStatusCode());
       return response.getResponse().getStatusLine().getStatusCode();
     } catch (Exception e) {
-      logger.error("登录请求异常"+e.getMessage());
+      logger.error("登录请求异常："+e.getMessage());
       return 500;
     }finally {
       response.getHttpPost().releaseConnection();
@@ -70,7 +70,7 @@ public class LoginTask {
       Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
     } catch (InterruptedException e) {
     }
-    for (int i = 1; i <= config.getTransferErrorTimes(); i++) {
+    for (int i = 1; i <= config.getTransferErrorTimes()+2; i++) {
       int code = execute(tokenValue,userName,password);
       if (code == 302) {
         return 302;
@@ -79,7 +79,7 @@ public class LoginTask {
           Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
         } catch (InterruptedException e) {
         }
-        logger.info("获取登录页面请求重试，剩余"+(config.getTransferErrorTimes()-i)+"次");
+        logger.info("获取登录页面请求重试，剩余"+(config.getTransferErrorTimes()+2-i)+"次");
       }
     }
     return 400;

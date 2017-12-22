@@ -17,6 +17,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +29,8 @@ public class ScheduledThread {
   private static Logger logger = LoggerFactory.getLogger(SimpleCrawlJob.class);
   private static List<ThreadResult> threadResults = Lists.newArrayList();
 
+  private static String version="0.5.1";
+
   public static List<ThreadResult> getThreadResults() {
     return threadResults;
   }
@@ -36,9 +39,13 @@ public class ScheduledThread {
     ScheduledThread.threadResults = threadResults;
   }
 
+  public static String getVersionData(){
+    return new DateTime().getMillis()+"-"+version;
+  }
+
   public static void main(String[] args) {
     IdentityCheck.checkIdentity();
-    logger.info("[version=0.5 2017-12-21],应用启动。。。");
+    logger.info("[version="+version+"] ["+new DateTime().toString("yyyy-MM-dd")+"]应用启动。。。");
     logger.info("开始加载用户数据");
     List<TransferUserInfo> userInfos = LoadData.loadUserInfoData("./account.csv");
 //    logger.info("开始加载cookie数据");

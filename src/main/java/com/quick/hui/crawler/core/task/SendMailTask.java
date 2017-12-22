@@ -42,6 +42,7 @@ public class SendMailTask {
       response = HttpUtils
           .doPost(result.getCrawlMeta(), result.getHttpConf().buildCookie());
       String returnStr=EntityUtils.toString(response.getResponse().getEntity());
+      logger.info("发送邮件服务器返回值-"+returnStr);
       if(returnStr.contains("number_exceeded")){
         logger.info("拒绝发送邮件，有未使用的邮件");
         return new SendMailResult("success","number_exceeded");
@@ -50,7 +51,7 @@ public class SendMailTask {
         return GsonUtil.jsonToObject(returnStr, SendMailResult.class);
       }
     } catch (Exception e) {
-      logger.info("发送邮件请求异常"+e.getMessage());
+      logger.info("发送邮件请求异常-"+e.getMessage());
       return null;
     }finally {
       response.getHttpPost().releaseConnection();
