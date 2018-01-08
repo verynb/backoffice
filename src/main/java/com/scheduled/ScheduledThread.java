@@ -10,7 +10,6 @@ import com.quick.hui.crawler.core.loadUserData.LoadProperties;
 import com.util.IdentityCheck;
 import com.util.RandomUtil;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
@@ -26,10 +25,10 @@ import org.slf4j.LoggerFactory;
  */
 public class ScheduledThread {
 
-  private static Logger logger = LoggerFactory.getLogger(SimpleCrawlJob.class);
+  private static Logger logger = LoggerFactory.getLogger(ScheduledThread.class);
   private static List<ThreadResult> threadResults = Lists.newArrayList();
 
-  private static String version="0.6";
+  private static String version="0.7";
 
   public static List<ThreadResult> getThreadResults() {
     return threadResults;
