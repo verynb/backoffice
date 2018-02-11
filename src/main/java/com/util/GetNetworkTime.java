@@ -25,7 +25,4 @@ public class GetNetworkTime {
       return System.currentTimeMillis();
     }
   }
-  public static void main(String[]args){
-    System.out.print(getNetworkDatetime());
-  }
 }

@@ -2,6 +2,8 @@ package com.quick.hui.crawler.core.utils;
 
 import com.quick.hui.crawler.core.entity.CrawlHttpConf;
 import com.quick.hui.crawler.core.entity.CrawlMeta;
+import com.quick.hui.crawler.core.entity.HttpPostResult;
+import com.quick.hui.crawler.core.entity.HttpResult;
 import com.quick.hui.crawler.core.localSession.LocalCookie;
 import com.quick.hui.crawler.core.localSession.Session;
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -30,21 +33,10 @@ import org.apache.http.protocol.HTTP;
 @Slf4j
 public class HttpUtils {
 
-  public static HttpResponse request(CrawlMeta crawlMeta, CrawlHttpConf httpConf) throws Exception {
-    switch (httpConf.getMethod()) {
-      case GET:
-        return doGet(crawlMeta, httpConf);
-      case POST:
-        return doPost(crawlMeta, httpConf);
-      default:
-        return null;
-    }
-  }
-
   /**
    * 执行GET 请求
    */
-  private static HttpResponse doGet(CrawlMeta crawlMeta, CrawlHttpConf httpConf) throws Exception {
+  public static HttpResult doGet(CrawlMeta crawlMeta, CrawlHttpConf httpConf) throws Exception {
 
     CookieStore cookieStore = new BasicCookieStore();
 
@@ -72,11 +64,12 @@ public class HttpUtils {
     HttpResponse response = httpClient.execute(httpGet);
     //保存cookie
     writeSession(cookieStore.getCookies());
-    return response;
+   /* httpGet.releaseConnection();
+    httpClient.getConnectionManager().shutdown();*/
+    return new HttpResult(httpClient, httpGet, response);
   }
 
-
-  private static HttpResponse doPost(CrawlMeta crawlMeta, CrawlHttpConf httpConf) throws Exception {
+  public static HttpPostResult doPost(CrawlMeta crawlMeta, CrawlHttpConf httpConf) throws Exception {
     CookieStore cookieStore = new BasicCookieStore();
     HttpClient httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
     HttpPost httpPost = new HttpPost(crawlMeta.getUrl());
@@ -92,11 +85,13 @@ public class HttpUtils {
     }
     HttpResponse response = httpClient.execute(httpPost);
     writeSession(cookieStore.getCookies());
-    return response;
+//    httpPost.releaseConnection();
+//    httpClient.getConnectionManager().shutdown();
+    return new HttpPostResult(httpClient, httpPost, response);
   }
 
 
-  public static HttpResponse doPostJson(CrawlMeta crawlMeta, CrawlHttpConf httpConf)
+  public static HttpPostResult doPostJson(CrawlMeta crawlMeta, CrawlHttpConf httpConf)
       throws Exception {
     CookieStore cookieStore = new BasicCookieStore();
     HttpClient httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
@@ -113,7 +108,7 @@ public class HttpUtils {
     }
     HttpResponse response = httpClient.execute(httpPost);
     writeSession(cookieStore.getCookies());
-    return response;
+    return new HttpPostResult(httpClient, httpPost, response);
   }
 
 

@@ -10,13 +10,13 @@ import com.quick.hui.crawler.core.loadUserData.LoadProperties;
 import com.util.IdentityCheck;
 import com.util.RandomUtil;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,8 +25,10 @@ import org.slf4j.LoggerFactory;
  */
 public class ScheduledThread {
 
-  private static Logger logger = LoggerFactory.getLogger(SimpleCrawlJob.class);
+  private static Logger logger = LoggerFactory.getLogger(ScheduledThread.class);
   private static List<ThreadResult> threadResults = Lists.newArrayList();
+
+  private static String version="0.7";
 
   public static List<ThreadResult> getThreadResults() {
     return threadResults;
@@ -36,22 +38,26 @@ public class ScheduledThread {
     ScheduledThread.threadResults = threadResults;
   }
 
+  public static String getVersionData(){
+    return new DateTime().getMillis()+"-"+version;
+  }
+
   public static void main(String[] args) {
     IdentityCheck.checkIdentity();
-    logger.info("应用启动。。。");
+    logger.info("[version="+version+"] ["+new DateTime().toString("yyyy-MM-dd")+"]应用启动。。。");
     logger.info("开始加载用户数据");
     List<TransferUserInfo> userInfos = LoadData.loadUserInfoData("./account.csv");
-    logger.info("开始加载cookie数据");
-    Map<String, String> cookie = LoadProperties.loadCookieProperties("./cookies.properties");
+//    logger.info("开始加载cookie数据");
+//    Map<String, String> cookie = LoadProperties.loadCookieProperties("./cookies.properties");
     ThreadConfig config = LoadProperties.loadConfigProperties("./config.properties");
 
     ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(config.getThreadPoolSize());
     for(int i=0;i<userInfos.size();i++){
       scheduledThreadPool.schedule(new SimpleCrawlJob(userInfos.get(i),
-              config, cookie),
-          1, TimeUnit.SECONDS);
+              config, null),
+          5, TimeUnit.SECONDS);
       try {
-        int space = RandomUtil.ranNum(config.getThreadspaceTime() * 1000);
+        int space = RandomUtil.ranNum(config.getThreadspaceTime() * 1000+5000);
         logger.info("任务时间间隔:" + space + "ms");
         Thread.sleep(space);
       } catch (InterruptedException e) {
