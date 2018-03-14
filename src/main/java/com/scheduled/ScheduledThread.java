@@ -28,7 +28,7 @@ public class ScheduledThread {
   private static Logger logger = LoggerFactory.getLogger(ScheduledThread.class);
   private static List<ThreadResult> threadResults = Lists.newArrayList();
 
-  private static String version="0.7";
+  private static String version="0.8";
 
   public static List<ThreadResult> getThreadResults() {
     return threadResults;

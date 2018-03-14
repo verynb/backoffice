@@ -3,21 +3,12 @@ package com.quick.hui.crawler.core.task;
 import com.quick.hui.crawler.core.entity.CrawlHttpConf.HttpMethod;
 import com.quick.hui.crawler.core.entity.CrawlMeta;
 import com.quick.hui.crawler.core.entity.HttpPostResult;
-import com.quick.hui.crawler.core.entity.LoginAuthTokenData;
 import com.quick.hui.crawler.core.entity.ThreadConfig;
 import com.quick.hui.crawler.core.job.CrawJobResult;
 import com.quick.hui.crawler.core.utils.HttpUtils;
 import com.util.RandomUtil;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.util.EntityUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +33,7 @@ public class LoginTask {
   }
 
   public static int execute(String tokenValue, String userName, String password) {
-    logger.info("登录参数{tokenValue="+tokenValue+",userName="+userName+", password="+password+"}");
+//    logger.info("登录参数{tokenValue="+tokenValue+",userName="+userName+", password="+password+"}");
     CrawJobResult result = buildTask(tokenValue, userName, password);
     HttpPostResult response=null;
     try {
@@ -50,7 +41,7 @@ public class LoginTask {
           .doPost(result.getCrawlMeta(), result.getHttpConf().buildCookie());
       if(response.getResponse().getStatusLine().getStatusCode()!=302){
         //用户名密码错误
-        logger.info("登录失败-用户名密码错误【 userName="+userName+", password="+password+"】");
+        logger.info("登录失败-用户名密码错误【 userName="+userName+", password=******】");
         return 400;
       }
       logger.info("登录成功-responseCode:" + response.getResponse().getStatusLine().getStatusCode());
