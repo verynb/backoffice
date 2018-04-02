@@ -7,7 +7,6 @@ import com.quick.hui.crawler.core.job.CrawJobResult;
 import com.quick.hui.crawler.core.task.LoginAuthTokenTask;
 import com.quick.hui.crawler.core.utils.HttpUtils;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -15,8 +14,6 @@ import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.http.util.EntityUtils;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
