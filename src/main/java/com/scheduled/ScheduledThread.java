@@ -26,9 +26,10 @@ import org.slf4j.LoggerFactory;
 public class ScheduledThread {
 
   private static Logger logger = LoggerFactory.getLogger(ScheduledThread.class);
+
   private static List<ThreadResult> threadResults = Lists.newArrayList();
 
-  private static String version="0.8";
+  private static String version="0.9";
 
   public static List<ThreadResult> getThreadResults() {
     return threadResults;
