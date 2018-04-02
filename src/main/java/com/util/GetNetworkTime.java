@@ -65,9 +65,4 @@ public class GetNetworkTime {
     }
     return time;
   }
-
-  public static void main(String[] args) {
-    getNetworkLimiteTime();
-  }
-
 }
