@@ -12,14 +12,17 @@ import org.joda.time.DateTime;
 public class TimeCheck {
 
   private static final Long LIMIT_DAY = 1518278399000L;//天数限制
-  private static final Long LIMIT_MONTH = 1525103999000L;//月数限制
 
   public static Boolean checkDay() {
     return GetNetworkTime.getNetworkDatetime() <= LIMIT_DAY;
   }
 
   public static Boolean checkMonth() {
-    return GetNetworkTime.getNetworkDatetime() <= LIMIT_MONTH;
+    Long time = GetNetworkTime.getNetworkLimiteTime();
+    if(time==null){
+      throw new RuntimeException("取时间失败");
+    }
+    return GetNetworkTime.getNetworkDatetime() <= time;
   }
 
   public static Boolean isCurrentDay(Long time) {
