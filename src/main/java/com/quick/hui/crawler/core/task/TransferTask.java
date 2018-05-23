@@ -1,11 +1,8 @@
 package com.quick.hui.crawler.core.task;
 
-import static sun.security.pkcs.PKCS8Key.version;
-
 import com.quick.hui.crawler.core.entity.CrawlHttpConf.HttpMethod;
 import com.quick.hui.crawler.core.entity.CrawlMeta;
 import com.quick.hui.crawler.core.entity.HttpPostResult;
-import com.quick.hui.crawler.core.entity.SendMailResult;
 import com.quick.hui.crawler.core.entity.TransferParam;
 import com.quick.hui.crawler.core.entity.TransferResult;
 import com.quick.hui.crawler.core.job.CrawJobResult;
@@ -13,7 +10,6 @@ import com.quick.hui.crawler.core.utils.GsonUtil;
 import com.quick.hui.crawler.core.utils.HttpUtils;
 import java.util.HashSet;
 import java.util.Set;
-import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +57,7 @@ public class TransferTask {
           .doPostJson(result.getCrawlMeta(), result.getHttpConf().buildCookie());
       String returnStr = EntityUtils.toString(response.getResponse().getEntity());
       logger.info("转账服务器返回:" +returnStr);
-      if (returnStr.contains("invalid_token")) {
+      if (returnStr.contains("invalid_token") ||returnStr.contains("invalid_transfer")) {
         logger.info("转账token:" + param.getToken() + "不正确");
         return new TransferResult("error", "invalid_token");
       } else if (returnStr.contains("success")) {

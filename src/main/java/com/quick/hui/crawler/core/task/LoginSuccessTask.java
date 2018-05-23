@@ -7,7 +7,6 @@ import com.quick.hui.crawler.core.job.CrawJobResult;
 import com.quick.hui.crawler.core.utils.HttpUtils;
 import java.util.HashSet;
 import java.util.Set;
-import org.apache.http.HttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

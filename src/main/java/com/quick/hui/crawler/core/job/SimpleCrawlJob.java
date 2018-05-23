@@ -14,12 +14,11 @@ import com.quick.hui.crawler.core.entity.UserInfo;
 import com.quick.hui.crawler.core.localSession.LocalCookie;
 import com.quick.hui.crawler.core.localSession.Session;
 import com.quick.hui.crawler.core.mailClient.ImapMailToken;
-import com.quick.hui.crawler.core.mailClient.MailToken;
 import com.quick.hui.crawler.core.mailClient.MailTokenData;
+import com.quick.hui.crawler.core.task.CancelTokenTask;
 import com.quick.hui.crawler.core.task.GetReceiverTask;
 import com.quick.hui.crawler.core.task.InitTask;
 import com.quick.hui.crawler.core.task.LoginAuthTokenTask;
-import com.quick.hui.crawler.core.task.LoginSuccessTask;
 import com.quick.hui.crawler.core.task.LoginTask;
 import com.quick.hui.crawler.core.task.SendMailTask;
 import com.quick.hui.crawler.core.task.TransferPageTask;
@@ -27,14 +26,12 @@ import com.quick.hui.crawler.core.task.TransferTask;
 import com.scheduled.ScheduledThread;
 import com.util.GetNetworkTime;
 import com.util.RandomUtil;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +60,7 @@ public class SimpleCrawlJob extends AbstractJob {
     this.userInfo = userInfo;
     this.config = config;
     this.cookies = cookies;
-    logger.info("userinfo===>"+userInfo.toString());
+    logger.info("userinfo===>" + userInfo.toString());
   }
 
   @Override
@@ -120,12 +117,12 @@ public class SimpleCrawlJob extends AbstractJob {
     if (tokenData.getCode() == 200) {
       //登录
       logger.info("开始登录");
-      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
-      int loginCode = LoginTask.tryTimes(config,tokenData.getResult(),
+      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000 + 5000);
+      int loginCode = LoginTask.tryTimes(config, tokenData.getResult(),
           this.userInfo.getUserName(), this.userInfo.getPassword());
       //登录成功
       if (loginCode == 302) {
-        Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
+        Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000 + 5000);
         transfer(this.userInfo.getEmail(), this.userInfo.getMailPassword(),
             this.userInfo.getTransferTo());
       } else {
@@ -158,10 +155,10 @@ public class SimpleCrawlJob extends AbstractJob {
         return;
       }
       TransferWallet wallet = filterList.get(0);
-      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
+      Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000 + 5000);
       UserInfo receiverInfo = GetReceiverTask.execute(transferTo);
       if (!Objects.isNull(receiverInfo) && receiverInfo.getResponse()) {
-        Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000+5000);
+        Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000 + 5000);
         logger.info(
             "获取转出账户信息成功===>" + receiverInfo.toString());
         SendMailResult mailResult =
@@ -175,7 +172,7 @@ public class SimpleCrawlJob extends AbstractJob {
           Thread.sleep(mailSpace);
           logger.info("开始读取邮件");
           List<MailTokenData> tokenData = tryReceiveMail(email, mailPassword, mailStartTime, mailSpace,
-                config.getMailReceiveErrorTimes());
+              config.getMailReceiveErrorTimes());
           if (CollectionUtils.isEmpty(tokenData)) {
             ScheduledThread.getThreadResults().add(new ThreadResult(userInfo.getRow(), false));
             transferFailueLogger.info("转账失败账户:" + userInfo.getUserName() + "原因:获取邮件信息失败");
@@ -208,7 +205,7 @@ public class SimpleCrawlJob extends AbstractJob {
       throws InterruptedException {
     for (int i = 1; i <= tryTimes; i++) {
       List<MailTokenData> tokenData = ImapMailToken
-          .filterMailsForIsNew(userInfo.getUserName(),email, mailPassword);
+          .filterMailsForIsNew(userInfo.getUserName(), email, mailPassword);
       if (CollectionUtils.isEmpty(tokenData)) {
         long tryMailSpace = RandomUtil.ranNum(config.getMailSpaceTime()) * 1000 + 30000;
         logger
@@ -240,12 +237,21 @@ public class SimpleCrawlJob extends AbstractJob {
     );
     logger.info("开始转账");
     logger.info("转账参数=" + param.toString());
+
     TransferResult transferCode = TransferTask.execute(param);
     if (transferCode.getError().equals("invalid_token")) {
       tokenData.remove(0);
       Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000);
-      logger.info("重试已有token");
-      transferByToken(email, mailPassword, getTransferPage, wallet, transferTo, receiverInfo, tokenData);
+      logger.info("取消已有token");
+//      transferByToken(email, mailPassword, getTransferPage, wallet, transferTo, receiverInfo, tokenData);
+      String cancelStr = CancelTokenTask.execute();
+      if(cancelStr.contains("success")){
+        logger.info("取消已有token成功");
+        Thread.sleep(RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000);
+        transfer(email, mailPassword, transferTo);
+      }else {
+        logger.info("取消已有token失败="+cancelStr);
+      }
     }
     if (transferCode.getStatus().equals("success")) {
       transferSuccessLogger.info(
