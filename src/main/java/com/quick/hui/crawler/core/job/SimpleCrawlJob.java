@@ -163,7 +163,7 @@ public class SimpleCrawlJob extends AbstractJob {
             "获取转出账户信息成功===>" + receiverInfo.toString());
         SendMailResult mailResult =
             SendMailTask
-                .execute(getTransferPage.getAuthToken(), getTransferPage.getTransferUserId());
+                .tryExcute(getTransferPage.getAuthToken(), getTransferPage.getTransferUserId(),RandomUtil.ranNum(config.getRequestSpaceTime()) * 1000);
         if (!Objects.isNull(mailResult)) {//邮件发送成功的情况
           long mailStartTime = GetNetworkTime.getNetworkDatetime();
           long mailSpace = RandomUtil.ranNum(config.getMailSpaceTime()) * 1000 + 30000;
