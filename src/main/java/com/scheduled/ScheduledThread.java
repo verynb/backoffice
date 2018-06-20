@@ -29,7 +29,7 @@ public class ScheduledThread {
 
   private static List<ThreadResult> threadResults = Lists.newArrayList();
 
-  private static String version="1.1";
+  private static String version="1.2";
 
   public static List<ThreadResult> getThreadResults() {
     return threadResults;
@@ -44,12 +44,10 @@ public class ScheduledThread {
   }
 
   public static void main(String[] args) {
-    IdentityCheck.checkIdentity();
+    IdentityCheck.checkVersion(version);
     logger.info("[version="+version+"] ["+new DateTime().toString("yyyy-MM-dd")+"]应用启动。。。");
     logger.info("开始加载用户数据");
     List<TransferUserInfo> userInfos = LoadData.loadUserInfoData("./account.csv");
-//    logger.info("开始加载cookie数据");
-//    Map<String, String> cookie = LoadProperties.loadCookieProperties("./cookies.properties");
     ThreadConfig config = LoadProperties.loadConfigProperties("./config.properties");
 
     ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(config.getThreadPoolSize());

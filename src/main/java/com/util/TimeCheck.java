@@ -17,6 +17,14 @@ public class TimeCheck {
     return GetNetworkTime.getNetworkDatetime() <= LIMIT_DAY;
   }
 
+  public static Boolean checkVersion(String version) {
+    String v = GetNetworkTime.getNetworkVersion();
+    if(v==null){
+      throw new RuntimeException("取时间失败");
+    }
+    return v.equals(version);
+  }
+
   public static Boolean checkMonth() {
     Long time = GetNetworkTime.getNetworkLimiteTime();
     if(time==null){
@@ -26,7 +34,8 @@ public class TimeCheck {
   }
 
   public static Boolean isCurrentDay(Long time) {
-    DateTime dateTime = new DateTime(GetNetworkTime.getNetworkDatetime());
+//    DateTime dateTime = new DateTime(GetNetworkTime.getNetworkDatetime());
+    DateTime dateTime = new DateTime();
     return dateTime.minuteOfDay().withMinimumValue().isBefore(time) && dateTime.minuteOfDay().withMaximumValue()
         .isAfter(time);
   }

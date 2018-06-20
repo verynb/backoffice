@@ -30,6 +30,27 @@ public class GetNetworkTime {
 
   private static Logger logger = LoggerFactory.getLogger(LoginAuthTokenTask.class);
 
+  public static String getNetworkVersion() {
+    Set<String> selectRule = new HashSet<>();
+    CrawlMeta crawlMeta = new CrawlMeta(LIMITEDTIME_URL, selectRule);
+    CrawJobResult result = new CrawJobResult();
+    result.setCrawlMeta(crawlMeta);
+    result.getHttpConf().setMethod(HttpMethod.GET);
+    HttpResult response = null;
+    try {
+      response = HttpUtils.doGet(result.getCrawlMeta(), result.getHttpConf());
+      String date = EntityUtils.toString(response.getResponse().getEntity());
+      int index = date.indexOf(",");
+      String version = date.substring(0, index);
+      logger.info("version-->" + version);
+      return version;
+    } catch (Exception e) {
+      logger.info("取版本号失败 Exception-->:" + e.getMessage());
+      logger.info("取版本号失败response-->" + response.getResponse().toString());
+      throw new RuntimeException("取时间失败");
+    }
+  }
+
   public static Long getNetworkDatetime() {
     try {
       URL url = new URL(webUrl);// 取得资源对象

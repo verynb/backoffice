@@ -72,7 +72,9 @@ public class ReceiveEmail {
     } else {
     }
   }
-
+  public void delete() throws MessagingException {
+    mimeMessage.setFlag(Flags.Flag.DELETED, true);
+  }
 
   public boolean isNew() throws MessagingException {
     Flags flags = mimeMessage.getFlags();

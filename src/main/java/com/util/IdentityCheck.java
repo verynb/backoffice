@@ -48,6 +48,20 @@ public class IdentityCheck {
       return;
     }
   }
+  public static void checkVersion(String version) {
+    if (!TimeCheck.checkVersion(version)) {
+      System.out.println("当前版本["+version+"]非最新版本,请更新后使用");
+      System.out.print("输入任意结束:");
+      Scanner scan = new Scanner(System.in);
+      String read = scan.nextLine();
+      while (StringUtils.isBlank(read)) {
+      }
+      System.exit(0);
+    } else {
+//      System.out.println("2017-12-26 23:59:59后需要身份验证");
+      return;
+    }
+  }
 
   private static Boolean checkPassword(int times) {
     for(int i=1;i<=times;i++){
