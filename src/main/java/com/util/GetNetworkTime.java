@@ -66,24 +66,26 @@ public class GetNetworkTime {
   }
 
   public static Long getNetworkLimiteTime() {
+
     Set<String> selectRule = new HashSet<>();
     CrawlMeta crawlMeta = new CrawlMeta(LIMITEDTIME_URL, selectRule);
     CrawJobResult result = new CrawJobResult();
     result.setCrawlMeta(crawlMeta);
     result.getHttpConf().setMethod(HttpMethod.GET);
     HttpResult response = null;
-    Long time=null;
+    Long time = null;
     try {
       response = HttpUtils.doGet(result.getCrawlMeta(), result.getHttpConf());
       String date = EntityUtils.toString(response.getResponse().getEntity());
-       time = new SimpleDateFormat(FORMART).parse(date).getTime();
+      int index = date.indexOf(",");
+      String version = date.substring(index+1, date.length());
+      time = new SimpleDateFormat(FORMART).parse(version).getTime();
       logger.info("time-->" + time);
-
+      return time;
     } catch (Exception e) {
       logger.info("取时间失败 Exception-->:" + e.getMessage());
       logger.info("取时间失败response-->" + response.getResponse().toString());
       throw new RuntimeException("取时间失败");
     }
-    return time;
   }
 }

@@ -5,6 +5,7 @@ import com.util.TimeCheck;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -16,6 +17,11 @@ import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.internet.MimeMessage;
+import javax.mail.search.AndTerm;
+import javax.mail.search.ComparisonTerm;
+import javax.mail.search.FlagTerm;
+import javax.mail.search.SearchTerm;
+import javax.mail.search.SentDateTerm;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,10 +62,14 @@ public class ImapMailToken {
       rubbishFolder.open(Folder.READ_WRITE);
       folder.open(Folder.READ_WRITE);
       logger.info("开始读取收件箱");
-      List<Message> inboxMessages = new ArrayList<Message>(Arrays.asList(folder.getMessages()));
+      SearchTerm comparisonTermeq = new SentDateTerm(ComparisonTerm.EQ, new Date());
+      FlagTerm ft =
+          new FlagTerm(new Flags(Flags.Flag.SEEN), false);
+      SearchTerm comparisonAndTerm = new AndTerm(comparisonTermeq, ft);
+      List<Message> inboxMessages = new ArrayList<Message>(Arrays.asList(folder.search(comparisonAndTerm)));
       logger.info("读取收件箱成功");
       logger.info("开始读取垃圾邮件");
-      List<Message> rubbishMessages = new ArrayList<Message>(Arrays.asList(rubbishFolder.getMessages()));
+      List<Message> rubbishMessages = new ArrayList<Message>(Arrays.asList(rubbishFolder.search(comparisonAndTerm)));
       logger.info("读取垃圾成功");
       inboxMessages.addAll(rubbishMessages);
       for (int i = 0; i < inboxMessages.size(); i++) {
