@@ -29,7 +29,7 @@ public class ScheduledThread {
 
   private static List<ThreadResult> threadResults = Lists.newArrayList();
 
-  private static String version="1.2";
+  private static String version="1.3";
 
   public static List<ThreadResult> getThreadResults() {
     return threadResults;
